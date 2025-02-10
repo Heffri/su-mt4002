@@ -1,0 +1,11 @@
+---
+title: "Labb 0"
+author: Sebastijan Babic & Esbjörn Runesson
+date: "XXXX--XX--XX"
+output: 
+  html_document:
+    toc: true                
+    toc_depth: 2             
+    theme: cerulean          
+    highlight: tango         
+---
