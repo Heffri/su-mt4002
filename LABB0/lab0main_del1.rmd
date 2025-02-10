@@ -14,7 +14,7 @@ output:
 # Uppgift 1
 Definiera en variabel $x$ som har värdet $\pi+1$. Använd värdet på denna variabel, avrundat till 3 decimaler, 
 mitt i en mening. Skriv t.ex. "Värdet av $\pi+1$ är ca ...". Hint: skriv ?round i Console för information om denna funktion, 
-och notera att $R$ har en inbyggd konstant pi.
+och notera att $R$ har en inbyggd konstant pi. hej
 
 ```{r}
 # skapa variabel x med pi + 1
