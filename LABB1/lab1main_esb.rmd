@@ -1,5 +1,5 @@
 ---
-title: "Labb 0"
+title: "Labb 1"
 author: Sebastijan Babic & Esbjörn Runesson
 date: "XXXX--XX--XX"
 output: 
@@ -9,3 +9,48 @@ output:
     theme: cerulean          
     highlight: tango         
 ---
+
+# Uppgift 1
+
+```{r}
+P <- matrix(c(0, 0, 0, 0.4, 0, 0.6,
+0.1, 0.1, 0, 0.4, 0, 0.4,
+0, 0.2, 0.2, 0.3, 0, 0.3,
+0, 0, 0.3, 0.5, 0, 0.2,
+0, 0, 0, 0.4, 0.6, 0,
+0, 0, 0, 0, 0.5, 0.5),
+nrow = 6,
+ncol = 6,
+byrow = TRUE)
+
+mpow <- function(A, n) {
+resultat <- diag(nrow(A))
+potens <- n
+while (potens > 0) {
+resultat <- A %*% resultat
+potens <- potens - 1
+}
+return(resultat)
+}
+
+Res <- mpow(P,4)
+Res2 <- mpow(P,7)
+Res3 <- mpow(P,14)
+Res4 <- mpow(P,90)
+
+print(Res[6,])
+```
+
+
+
+
+
+# Uppgift 2
+
+
+
+# Uppgift 3
+
+
+
+# Uppgift 4
