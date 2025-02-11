@@ -1,13 +1,16 @@
 ---
 title: "Labb 1"
-author: Sebastijan Babic & Esbjörn Runesson
+author: "Sebastijan Babic & Esbjörn Runesson"
 date: "XXXX--XX--XX"
-output: 
+output:
+  pdf_document:
+    toc: true
+    toc_depth: '2'
   html_document:
-    toc: true                
-    toc_depth: 2             
-    theme: cerulean          
-    highlight: tango         
+    toc: true
+    toc_depth: 2
+    theme: cerulean
+    highlight: tango
 ---
 
 
@@ -25,15 +28,113 @@ P <- matrix(c(0, 0, 0, 0.4, 0, 0.6,
 ```
 
 # Uppgift 1
-På Matematiska institutionen finns en kopiator som inte alltid fungerar perfekt. Dess tillstånd kan beskrivas på en skala från 0 till 5 , där 0 innebär att kopiatorn är helt ur funktion och 5 motsvarar en fullt fungerande maskin. Ju sämre tillstånd kopiatorn är i, desto större är sannolikheten att någon kallar på teknisk support. Tyvärr är det inte alltid som supporten kan återställa kopiatorn till optimalt skick. Ibland lyckas de bara
-1
+På Matematiska institutionen finns en kopiator som inte alltid fungerar perfekt. Dess tillstånd kan beskrivas på en skala från 0 till 5 , där 0 innebär att kopiatorn är helt ur funktion och 5 motsvarar en fullt fungerande maskin. Ju sämre tillstånd kopiatorn är i, desto större är sannolikheten att någon kallar på teknisk support. Tyvärr är det inte alltid som supporten kan återställa kopiatorn till optimalt skick. Ibland lyckas de bara 1
 delvis med reparationen, och får maskinen att fungera på nivå 3 . Som ett resultat av detta kommer kopiatorns
 tillstånd att variera från dag till dag, vilket kan modelleras med en Markovkedja. Övergångsmatrisen för
 denna Markovkedja, där tillstånd 0 är "helt ur funktion" och 5 är "fullt fungerande", ser ut på följande sätt:
+
 ## Uppgift 1.1
 
 
+```{r}
+mpow <- function(A, n) {
+resultat <- diag(nrow(A))
+potens <- n
+while (potens > 0) {
+resultat <- A %*% resultat
+potens <- potens - 1
+}
+return(resultat)
+}
+```
+
+Om kopiatorn idag (måndag) är i tillstånd 5, vilken sannolikhetsfördelning beskriver då dess tillstånd på:
+### Deluppgift a) | 3 dagar
+
+```{r}
+transition_matrix_3 <- mpow(P, 3) # upphöjer matrisen i 3
+start_5 <- c(0,0,0,0,0,1)
+
+result <- start_5 %*% transition_matrix_3 # enlig pi = pi * P
+result
+```
+
+
+### Deluppgift b) | 7 dagar
+
+```{r}
+transition_matrix_7 <- mpow(P,7)
+result <- start_5 %*% transition_matrix_7
+result
+```
+
+
+### Deluppgift c) | 14 dagar
+
+```{r}
+transition_matrix_14 <- mpow(P,14)
+result <- start_5 %*% transition_matrix_14
+result
+```
+
+### Deluppgift d) | 90 dagar
+    
+```{r}
+transition_matrix_90 <- mpow(P,90)
+result <- start_5 %*% transition_matrix_90
+result
+```
+
+    
+    
 ## Uppgift 1.2
+Om vi börjar i tillstånd 2 så får vi istället:
+### Deluppgift a) | 3 dagar
+```{r}
+start_2 <- c(0,0,1,0,0,0)
+result <- start_2 %*% transition_matrix_3
+result
+```
+
+
+
+### Deluppgift b) | 7 dagar
+
+```{r}
+result <- start_2 %*% transition_matrix_7
+result
+```
+
+
+### Deluppgift c) | 14 dagar
+```{r}
+result <- start_2 %*% transition_matrix_14
+result
+```
+
+
+
+### Deluppgift d) | 90 dagar
+```{r}
+result <- start_2 %*% transition_matrix_90
+result
+```
+
+
+
+
+# Uppgift 2
+## Uppgift 2.1
+
+## Uppgift 2.2
+
+
+
+# Uppgift 3
+
+
+
+# Uppgift 4
 
 
 
