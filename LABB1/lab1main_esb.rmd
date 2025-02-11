@@ -32,25 +32,169 @@ potens <- potens - 1
 }
 return(resultat)
 }
+```
+
+
+1)
+
+```{r}
 
 Res <- mpow(P,4)
 Res2 <- mpow(P,7)
 Res3 <- mpow(P,14)
 Res4 <- mpow(P,90)
 
-print(Res[6,])
+print(Res[6,]) #a)
+print(Res2[6,]) #b)
+print(Res3[6,]) #c)
+print(Res4[6,]) #d)
 ```
 
+2)
 
+```{r}
+print(Res[3,]) #a)
+print(Res2[3,]) #b)
+print(Res3[3,]) #c)
+print(Res4[3,]) #d)
+```
 
 
 
 # Uppgift 2
 
+1)
+
+```{r}
+mpow <- function(A, n) {
+resultat <- diag(nrow(A))
+potens <- n
+while (potens > 0) {
+resultat <- A %*% resultat
+potens <- potens - 1
+}
+return(resultat)
+}
+
+rows_equal <- function(A, d = 4) {
+A_new <- trunc(A * 10^d) # förstora talet och ta heltalsdelen
+for (k in 2:nrow(A_new)) {
+# Kolla om alla element i rad 1 är lika med motsvarande element i rad k
+if (!all(A_new[1, ] == A_new[k, ])) {
+# Om något element skiljer sig så är raderna ej lika
+return(FALSE)
+}
+}
+# Hamnar vi här så var alla rader lika
+return(TRUE)
+}
+
+matrices_equal <- function(A, B, d = 4) {
+A_new <- trunc(A * 10^d)
+B_new <- trunc(B * 10^d)
+if (all(A_new == B_new)) {
+return(TRUE)
+} else {
+return(FALSE)
+}
+}
+
+# Funktion för att hitta det minsta n där P^n konvergerar enligt kriterierna
+find_convergence <- function(P, max_iter = 1000, d = 4) {
+  n <- 1
+  while (n <= max_iter) {
+    P_n <- mpow(P, n)       # Beräkna P^n
+    P_n_plus_1 <- mpow(P, n + 1)  # Beräkna P^{n+1}
+    
+    # Kontrollera om P^n ≈ P^{n+1} och om alla rader i P^n är identiska
+    if (matrices_equal(P_n, P_n_plus_1, d) && rows_equal(P_n, d)) {
+      cat("Konvergens uppnådd vid n =", n, "\n")
+      cat("En rad i P^n (med 4 decimalers noggrannhet):\n")
+      print(round(P_n[1, ], d))  # Skriv ut en rad med 4 decimaler
+      return(n)
+    }
+    
+    n <- n + 1  # Öka n och fortsätt loopen
+  }
+  
+  cat("Ingen konvergens hittades inom", max_iter, "iterationer.\n")
+  return(NA)
+}
+find_convergence(P)
+```
+
+2)
+
+```{r}
+# Funktion för att beräkna den stationära fördelningen
+stationary_distribution <- function(P) {
+  n <- nrow(P)  # Antal tillstånd
+  I <- diag(n)  # Identitetsmatris
+  
+  # Skapa ekvationssystemet: pi (I - P) = 0 och sum(pi) = 1
+  A <- t(I - P)  # Transponera (I - P) för att matcha ekvationen pi (I - P) = 0
+  A <- rbind(A, rep(1, n))  # Lägg till ekvationen sum(pi) = 1
+  
+  # Högerled: en vektor med nollor och en etta
+  b <- c(rep(0, n), 1)
+  
+  # Lös ekvationssystemet med minsta kvadratmetoden (eftersom systemet är överbestämt)
+  pi <- qr.solve(A, b)
+  
+  return(pi)
+}
+pi <- stationary_distribution(P)
+print("Den stationära fördelningen är:")
+print(pi)
+```
 
 
 # Uppgift 3
 
+
+```{r}
+# Funktion för att simulera Markovkedjan
+simulate_markov_chain <- function(P, start_state, n_days) {
+  n_states <- nrow(P)  # Antal tillstånd
+  states <- numeric(n_days)  # Vektor för att spara tillstånden
+  current_state <- start_state  # Starta i det angivna tillståndet
+  
+  for (day in 1:n_days) {
+    states[day] <- current_state  # Spara aktuellt tillstånd
+    current_state <- sample(1:n_states, size = 1, prob = P[current_state, ])  # Simulera övergång
+  }
+  
+  return(states)
+}
+
+# Funktion för att beräkna den empiriska fördelningen
+empirical_distribution <- function(states, n_states) {
+  counts <- table(factor(states, levels = 1:n_states))  # Räkna antalet dagar i varje tillstånd
+  distribution <- counts / length(states)  # Normalisera till en fördelning
+  return(distribution)
+}
+
+# Exempel på användning
+
+start_state <- 5  # Starta i tillstånd 5
+n_days <- 1000  # Simulera 1000 dagar
+
+# Simulera Markovkedjan
+states <- simulate_markov_chain(P, start_state, n_days)
+
+# Beräkna den empiriska fördelningen
+emp_dist <- empirical_distribution(states, nrow(P))
+
+# Beräkna den stationära fördelningen
+pi <- stationary_distribution(P)
+
+# Skapa ett stapeldiagram för att jämföra fördelningarna
+barplot(rbind(emp_dist, pi), beside = TRUE, col = c("blue", "red"),
+        names.arg = 1:nrow(P), xlab = "Tillstånd", ylab = "Sannolikhet",
+        main = "Jämförelse av empirisk och stationär fördelning",
+        legend.text = c("Empirisk fördelning", "Stationär fördelning"),
+        args.legend = list(x = "topleft"))
+```
 
 
 # Uppgift 4
