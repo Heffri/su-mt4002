@@ -1,5 +1,5 @@
 ---
-title: "Labb 0"
+title: "Labb 1"
 author: Sebastijan Babic & Esbjörn Runesson
 date: "XXXX--XX--XX"
 output: 
@@ -9,3 +9,31 @@ output:
     theme: cerulean          
     highlight: tango         
 ---
+
+
+
+```{r}
+P <- matrix(c(0, 0, 0, 0.4, 0, 0.6,
+              0.1, 0.1, 0, 0.4, 0, 0.4,
+              0, 0.2, 0.2, 0.3, 0, 0.3,
+              0, 0, 0.3, 0.5, 0, 0.2,
+              0, 0, 0, 0.4, 0.6, 0,
+              0, 0, 0, 0, 0.5, 0.5),
+            nrow = 6,
+            ncol = 6,
+            byrow = TRUE)
+```
+
+# Uppgift 1
+På Matematiska institutionen finns en kopiator som inte alltid fungerar perfekt. Dess tillstånd kan beskrivas på en skala från 0 till 5 , där 0 innebär att kopiatorn är helt ur funktion och 5 motsvarar en fullt fungerande maskin. Ju sämre tillstånd kopiatorn är i, desto större är sannolikheten att någon kallar på teknisk support. Tyvärr är det inte alltid som supporten kan återställa kopiatorn till optimalt skick. Ibland lyckas de bara
+1
+delvis med reparationen, och får maskinen att fungera på nivå 3 . Som ett resultat av detta kommer kopiatorns
+tillstånd att variera från dag till dag, vilket kan modelleras med en Markovkedja. Övergångsmatrisen för
+denna Markovkedja, där tillstånd 0 är "helt ur funktion" och 5 är "fullt fungerande", ser ut på följande sätt:
+## Uppgift 1.1
+
+
+## Uppgift 1.2
+
+
+
