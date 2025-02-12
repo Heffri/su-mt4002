@@ -155,16 +155,15 @@ print(pi)
 ```{r}
 # Funktion för att simulera Markovkedjan
 simulate_markov_chain <- function(P, start_state, n_days) {
-  n_states <- nrow(P)  # Antal tillstånd
-  states <- numeric(n_days)  # Vektor för att spara tillstånden
-  current_state <- start_state  # Starta i det angivna tillståndet
-  
-  for (day in 1:n_days) {
-    states[day] <- current_state  # Spara aktuellt tillstånd
-    current_state <- sample(1:n_states, size = 1, prob = P[current_state, ])  # Simulera övergång
-  }
-  
-  return(states)
+  n_states <- nrow(P)  
+  states <- numeric(n_days)  
+  states[1] <- start_state  
+
+  for (day in 2:n_days) {  
+    states[day] <- sample(1:n_states, size = 1, prob = P[states[day - 1], ])  
+  }  
+
+  return(states)  
 }
 
 # Funktion för att beräkna den empiriska fördelningen
@@ -198,3 +197,58 @@ barplot(rbind(emp_dist, pi), beside = TRUE, col = c("blue", "red"),
 
 
 # Uppgift 4
+
+
+1)
+
+```{r}
+# Funktion för att beräkna den empiriska sannolikheten
+empirical_probability <- function(states) {
+  count_Xn_minus_1_1_and_Xn_5 <- 0  # Räkna antalet gånger X_{n-1} = 1 och X_n = 5
+  count_Xn_5 <- 0  # Räkna antalet gånger X_n = 5
+  
+  for (n in 2:length(states)) {
+    if (states[n] == 5) {
+      count_Xn_5 <- count_Xn_5 + 1
+      if (states[n - 1] == 1) {
+        count_Xn_minus_1_1_and_Xn_5 <- count_Xn_minus_1_1_and_Xn_5 + 1
+      }
+    }
+  }
+  
+  # Beräkna den empiriska sannolikheten
+  if (count_Xn_5 > 0) {
+    prob <- count_Xn_minus_1_1_and_Xn_5 / count_Xn_5
+  } else {
+    prob <- 0
+  }
+  
+  return(prob)
+}
+
+# Använd simuleringen från uppgift 3
+states <- simulate_markov_chain(P, start_state = 5, n_days = 1000)
+emp_prob <- empirical_probability(states)
+print(paste("Empirisk sannolikhet: ", round(emp_prob, 4)))
+```
+
+2)
+
+```{r}
+# Teoretisk beräkning med Bayes formel
+theoretical_probability <- function(P, pi) {
+  P_1_to_5 <- P[1, 5]  # P(X_n = 5 | X_{n-1} = 1)
+  pi_1 <- pi[1]  # P(X_{n-1} = 1)
+  pi_5 <- pi[5]  # P(X_n = 5)
+  
+  prob <- (P_1_to_5 * pi_1) / pi_5
+  return(prob)
+}
+
+# Använd den stationära fördelningen från uppgift 2
+pi <- stationary_distribution(P)
+theo_prob <- theoretical_probability(P, pi)
+print(paste("Teoretisk sannolikhet: ", round(theo_prob, 4)))
+```
+
+
