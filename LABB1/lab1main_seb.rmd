@@ -3,17 +3,15 @@ title: "Labb 1"
 author: "Sebastijan Babic & Esbjörn Runesson"
 date: "XXXX--XX--XX"
 output:
-  pdf_document:
-    toc: true
-    toc_depth: '2'
   html_document:
     toc: true
     toc_depth: 2
     theme: cerulean
     highlight: tango
+  pdf_document:
+    toc: true
+    toc_depth: '2'
 ---
-
-
 
 ```{r}
 P <- matrix(c(0, 0, 0, 0.4, 0, 0.6,
@@ -28,13 +26,10 @@ P <- matrix(c(0, 0, 0, 0.4, 0, 0.6,
 ```
 
 # Uppgift 1
-På Matematiska institutionen finns en kopiator som inte alltid fungerar perfekt. Dess tillstånd kan beskrivas på en skala från 0 till 5 , där 0 innebär att kopiatorn är helt ur funktion och 5 motsvarar en fullt fungerande maskin. Ju sämre tillstånd kopiatorn är i, desto större är sannolikheten att någon kallar på teknisk support. Tyvärr är det inte alltid som supporten kan återställa kopiatorn till optimalt skick. Ibland lyckas de bara 1
-delvis med reparationen, och får maskinen att fungera på nivå 3 . Som ett resultat av detta kommer kopiatorns
-tillstånd att variera från dag till dag, vilket kan modelleras med en Markovkedja. Övergångsmatrisen för
-denna Markovkedja, där tillstånd 0 är "helt ur funktion" och 5 är "fullt fungerande", ser ut på följande sätt:
+
+På Matematiska institutionen finns en kopiator som inte alltid fungerar perfekt. Dess tillstånd kan beskrivas på en skala från 0 till 5 , där 0 innebär att kopiatorn är helt ur funktion och 5 motsvarar en fullt fungerande maskin. Ju sämre tillstånd kopiatorn är i, desto större är sannolikheten att någon kallar på teknisk support. Tyvärr är det inte alltid som supporten kan återställa kopiatorn till optimalt skick. Ibland lyckas de bara 1 delvis med reparationen, och får maskinen att fungera på nivå 3 . Som ett resultat av detta kommer kopiatorns tillstånd att variera från dag till dag, vilket kan modelleras med en Markovkedja. Övergångsmatrisen för denna Markovkedja, där tillstånd 0 är "helt ur funktion" och 5 är "fullt fungerande", ser ut på följande sätt:
 
 ## Uppgift 1.1
-
 
 ```{r}
 mpow <- function(A, n) {
@@ -48,93 +43,161 @@ return(resultat)
 }
 ```
 
-Om kopiatorn idag (måndag) är i tillstånd 5, vilken sannolikhetsfördelning beskriver då dess tillstånd på:
-### Deluppgift a) | 3 dagar
-
 ```{r}
-transition_matrix_3 <- mpow(P, 3) # upphöjer matrisen i 3
-start_5 <- c(0,0,0,0,0,1)
 
-result <- start_5 %*% transition_matrix_3 # enlig pi = pi * P
-result
+Res <- mpow(P,4)
+Res2 <- mpow(P,7)
+Res3 <- mpow(P,14)
+Res4 <- mpow(P,90)
+
+Res[6,] #a)
+Res2[6,] #b)
+Res3[6,] #c)
+Res4[6,] #d)
 ```
 
-
-### Deluppgift b) | 7 dagar
-
-```{r}
-transition_matrix_7 <- mpow(P,7)
-result <- start_5 %*% transition_matrix_7
-result
-```
-
-
-### Deluppgift c) | 14 dagar
-
-```{r}
-transition_matrix_14 <- mpow(P,14)
-result <- start_5 %*% transition_matrix_14
-result
-```
-
-### Deluppgift d) | 90 dagar
-    
-```{r}
-transition_matrix_90 <- mpow(P,90)
-result <- start_5 %*% transition_matrix_90
-result
-```
-
-    
-    
 ## Uppgift 1.2
+
 Om vi börjar i tillstånd 2 så får vi istället:
-### Deluppgift a) | 3 dagar
-```{r}
-start_2 <- c(0,0,1,0,0,0)
-result <- start_2 %*% transition_matrix_3
-result
-```
-
-
-
-### Deluppgift b) | 7 dagar
 
 ```{r}
-result <- start_2 %*% transition_matrix_7
-result
+print(Res[3,]) #a)
+print(Res2[3,]) #b)
+print(Res3[3,]) #c)
+print(Res4[3,]) #d)
 ```
-
-
-### Deluppgift c) | 14 dagar
-```{r}
-result <- start_2 %*% transition_matrix_14
-result
-```
-
-
-
-### Deluppgift d) | 90 dagar
-```{r}
-result <- start_2 %*% transition_matrix_90
-result
-```
-
-
-
 
 # Uppgift 2
+
 ## Uppgift 2.1
+
+```{r}
+mpow <- function(A, n) {
+resultat <- diag(nrow(A))
+potens <- n
+while (potens > 0) {
+resultat <- A %*% resultat
+potens <- potens - 1
+}
+return(resultat)
+}
+
+rows_equal <- function(A, d = 4) {
+A_new <- trunc(A * 10^d) # förstora talet och ta heltalsdelen
+for (k in 2:nrow(A_new)) {
+# Kolla om alla element i rad 1 är lika med motsvarande element i rad k
+if (!all(A_new[1, ] == A_new[k, ])) {
+# Om något element skiljer sig så är raderna ej lika
+return(FALSE)
+}
+}
+# Hamnar vi här så var alla rader lika
+return(TRUE)
+}
+
+matrices_equal <- function(A, B, d = 4) {
+A_new <- trunc(A * 10^d)
+B_new <- trunc(B * 10^d)
+if (all(A_new == B_new)) {
+return(TRUE)
+} else {
+return(FALSE)
+}
+}
+
+# Funktion för att hitta det minsta n där P^n konvergerar enligt kriterierna
+find_convergence <- function(P, max_iter = 1000, d = 4) {
+  n <- 1
+  while (n <= max_iter) {
+    P_n <- mpow(P, n)       # Beräkna P^n
+    P_n_plus_1 <- mpow(P, n + 1)  # Beräkna P^{n+1}
+    
+    # Kontrollera om P^n ≈ P^{n+1} och om alla rader i P^n är identiska
+    if (matrices_equal(P_n, P_n_plus_1, d) && rows_equal(P_n, d)) {
+      cat("Konvergens uppnådd vid n =", n, "\n")
+      cat("En rad i P^n (med 4 decimalers noggrannhet):\n")
+      print(round(P_n[1, ], d))  # Skriv ut en rad med 4 decimaler
+      return(n)
+    }
+    
+    n <- n + 1  # Öka n och fortsätt loopen
+  }
+  
+  cat("Ingen konvergens hittades inom", max_iter, "iterationer.\n")
+  return(NA)
+}
+find_convergence(P)
+```
 
 ## Uppgift 2.2
 
+```{r}
+# Antalet tillstånd
+n <- nrow(P)
 
+# Identitetsmatris
+I <- diag(n)
+
+# Vi vill lösa:  pi(I - P) = 0
+# Om vi transponerar får vi: (I - P)^T * pi^T = 0.
+# Vi ställer därför upp koefficientmatrisen A för att qr.solve ska fungera:
+A <- t(I - P)
+
+# Lägg till normaliseringsvillkoret: pi0 + pi1 + ... + pi5 = 1
+A <- rbind(A, rep(1, n))
+b <- c(rep(0, n), 1)
+
+# Lös systemet med qr.solve 
+pi_stationary <- qr.solve(A, b)
+
+cat("Stationära fördelningen (lösning av pi = pi P) är:\n")
+print(round(pi_stationary, 9))
+```
 
 # Uppgift 3
+```{r}
+# Simuleringsfunktion för Markovkedjan
+simulate_chain <- function(P, init, n_steps) {
+  # init: initialt tillstånd (här: 5)
+  # Eftersom tillstånden är 0, 1, 2, 3, 4, 5 så måste vi tänka på att
+  # R-indexeringen börjar vid 1, dvs. tillstånd 5 motsvarar index 6.
+  states <- numeric(n_steps)
+  states[1] <- init
+  for (i in 2:n_steps) {
+    # Hämta nuvarande tillstånd, omvandla till index (tillstånd + 1)
+    current <- states[i - 1] + 1
+    # Välj nästa tillstånd baserat på övergångssannolikheterna
+    states[i] <- sample(0:5, size = 1, prob = P[current, ])
+  }
+  return(states)
+}
+```
+
+
+```{r}
+set.seed(123)  # För att resultaten ska bli reproducerbara
+
+# Simulera kedjan i 1000 dagar med start i tillstånd 5
+chain <- simulate_chain(P, init = 5, n_steps = 1000)
+
+# Räkna hur många gånger varje tillstånd inträffar
+empirical_counts <- table(chain)
+# Omvandla antalet till en andelsfördelning
+empirical_distribution <- empirical_counts / length(chain)
+
+# Skriv ut den empiriska fördelningen
+print(empirical_distribution)
+
+# Rita ett stapeldiagram
+barplot(empirical_distribution,
+        main = "Empirisk fördelning efter 1000 dagar",
+        xlab = "Tillstånd (0-5)",
+        ylab = "Andel",
+        col = "lightblue")
+
+```
+
 
 
 
 # Uppgift 4
-
-
-
