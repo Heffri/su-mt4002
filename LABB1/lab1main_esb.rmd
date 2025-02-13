@@ -198,7 +198,8 @@ barplot(rbind(emp_dist, pi), beside = TRUE, col = c("blue", "red"),
         main = "Jämförelse av empirisk och stationär fördelning",
         legend.text = c("Empirisk fördelning", "Stationär fördelning"),
         args.legend = list(x = "topleft"))
-emp_dist
+emp_dist[2]
+states
 ```
 
 
