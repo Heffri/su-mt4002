@@ -12,6 +12,8 @@ output:
 
 # Uppgift 1
 
+Vi vill undersöka en kopiator på Matematiska Institutionen vars tillstånd kan beskrivas genom en skala från 0 till 5, där 0 innebär ur funktion och 5 innebär fullt fungerande. Eftersom kopiatorns tillstånd kommer variera från dag till dag så kan vi modellera den genom en Markovkedja där vi har en övergångsmatris  $P$ som definieras nedan. Vi använder funktionen mpow för att upphöja $P$ till lämplig potens och läser sedan av den rad som överensstämmer med kopiatorns tillstånd.
+
 ```{r}
 P <- matrix(c(0, 0, 0, 0.4, 0, 0.6,
 0.1, 0.1, 0, 0.4, 0, 0.4,
@@ -62,6 +64,8 @@ print(Res4[3,]) #d)
 
 
 # Uppgift 2
+
+Vi vill i denna uppgift undersöka för vilken potens $n$ av övergångsmatrisen som följden har konvergerat, dvs när vi har att $P_{n} \approx P_{n+1}$ med fyra decimalers noggrannhet. Vi ska därför har likhet för alla element i $P_{n}$ samt $P_{n+1}$ med fyra decimalers noggrannhet, vi tar sedan ut en rad från övergångsmatrisen för det värdet på $n$ med fyra decimalers noggrannhet. I den andra deluppgiften så hittar vi Markovkedjans stationära fördelning och se om resultatet skiljer sig från den radvektor som vi fick i deluppgift 1.  
 
 1)
 
@@ -151,6 +155,7 @@ print(pi)
 
 # Uppgift 3
 
+I denna uppgift så utgår vi ifrån att om vi för statistisk över kopiatorns tillstånd varje dag under ett års tid, om vi då får en fördelning som liknar den stationära fördelningen i uppgift 2. Vi undersöker detta genom att simulera en utveckling som startar i tillstånd 5 och pågår i 1000 dagar, och illustrerar sedan detta med hjälp av ett stapeldiagram.
 
 ```{r}
 # Funktion för att simulera Markovkedjan
@@ -193,11 +198,13 @@ barplot(rbind(emp_dist, pi), beside = TRUE, col = c("blue", "red"),
         main = "Jämförelse av empirisk och stationär fördelning",
         legend.text = c("Empirisk fördelning", "Stationär fördelning"),
         args.legend = list(x = "topleft"))
+emp_dist
 ```
 
 
 # Uppgift 4
 
+Vi ska i denna uppgift undersöka sannolikheten för att om kopiatorns tillstånd är 5, vad är sannolikheten för att den igår befann sig i tillstånd 1. I första deluppgiften så ska vi undersöka detta genom att gå igenom vårt resultat i simuleringen från uppgift 3, empiriskt betrakta alla dagar då kopiatorn befann sig i tillstånd 5 och se hur många av dom som föregås av en dag då maskinen är i tillstånd 1. I den andra deluppgiften så undersöker vi detta teoretiskt genom att använda den stationära fördelningen från uppgift 2 samt Bayes formel.
 
 1)
 
