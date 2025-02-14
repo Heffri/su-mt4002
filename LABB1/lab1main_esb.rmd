@@ -198,8 +198,7 @@ barplot(rbind(emp_dist, pi), beside = TRUE, col = c("blue", "red"),
         main = "Jämförelse av empirisk och stationär fördelning",
         legend.text = c("Empirisk fördelning", "Stationär fördelning"),
         args.legend = list(x = "topleft"))
-emp_dist[2]
-states
+
 ```
 
 
@@ -209,54 +208,68 @@ Vi ska i denna uppgift undersöka sannolikheten för att om kopiatorns tillstån
 
 1)
 
+Vi använder för denna uppgift definitionen av betingad sannolikhet $P(X_{n-1} = 1 | X_{n} = 5)$ vilket vi beräknar som $\frac{P(X_{n-1} = 1, X_{n} = 5)}{P(X_{n} = 5)}$.
+
 ```{r}
 # Funktion för att beräkna den empiriska sannolikheten
 empirical_probability <- function(states) {
-  count_Xn_minus_1_1_and_Xn_5 <- 0  # Räkna antalet gånger X_{n-1} = 1 och X_n = 5
-  count_Xn_5 <- 0  # Räkna antalet gånger X_n = 5
+  count_Xn_minus_1_2_and_Xn_6 <- 0  # Räkna antalet gånger X_{n-1} = 2 och X_n = 6
+  count_Xn_6 <- 0  # Räkna antalet gånger X_n = 6
   
   for (n in 2:length(states)) {
-    if (states[n] == 5) {
-      count_Xn_5 <- count_Xn_5 + 1
-      if (states[n - 1] == 1) {
-        count_Xn_minus_1_1_and_Xn_5 <- count_Xn_minus_1_1_and_Xn_5 + 1
+    if (states[n] == 6) {
+      count_Xn_6 <- count_Xn_6 + 1
+      if (states[n - 1] == 2) {
+        count_Xn_minus_1_2_and_Xn_6 <- count_Xn_minus_1_2_and_Xn_6 + 1
       }
     }
   }
   
   # Beräkna den empiriska sannolikheten
-  if (count_Xn_5 > 0) {
-    prob <- count_Xn_minus_1_1_and_Xn_5 / count_Xn_5
+  if (count_Xn_6 > 0) {
+    prob <- count_Xn_minus_1_2_and_Xn_6 / count_Xn_6
   } else {
-    prob <- 0
+    prob <- 0  # Undvik division med noll om 6 inte förekommer
   }
   
-  return(prob)
+  return(prob)  # Returnera den empiriska sannolikheten
 }
 
 # Använd simuleringen från uppgift 3
 states <- simulate_markov_chain(P, start_state = 5, n_days = 1000)
+
+# Beräkna den empiriska sannolikheten
 emp_prob <- empirical_probability(states)
 print(paste("Empirisk sannolikhet: ", round(emp_prob, 4)))
 ```
 
 2)
 
+Vi använder i denna uppgift Bayes sats $P(X_{n-1} = 1 | X_{n} = 5) = \frac{P(X_{n}=5 | X_{n-1}=1)\cdot P(X_{n-1}=1)}{P(X_{n}=5)}$
+
 ```{r}
-# Teoretisk beräkning med Bayes formel
-theoretical_probability <- function(P, pi) {
-  P_1_to_5 <- P[1, 5]  # P(X_n = 5 | X_{n-1} = 1)
-  pi_1 <- pi[1]  # P(X_{n-1} = 1)
-  pi_5 <- pi[5]  # P(X_n = 5)
+# Teoretisk sannolikhet med Bayes formel
+theoretical_probability <- function(P, pi, state_prev = 2, state_current = 6) {
+  # Sannolikheten att gå från state_prev till state_current
+  P_prev_current <- P[state_prev, state_current]
   
-  prob <- (P_1_to_5 * pi_1) / pi_5
+  # Stationära sannolikheter för state_prev och state_current
+  pi_prev <- pi[state_prev]
+  pi_current <- pi[state_current]
+  
+  # Beräkna den teoretiska sannolikheten med Bayes formel
+  if (pi_current > 0) {
+    prob <- (P_prev_current * pi_prev) / pi_current
+  } else {
+    prob <- 0  # Undvik division med noll om pi_current är 0
+  }
+  
   return(prob)
 }
 
-# Använd den stationära fördelningen från uppgift 2
-pi <- stationary_distribution(P)
-theo_prob <- theoretical_probability(P, pi)
-print(paste("Teoretisk sannolikhet: ", round(theo_prob, 4)))
+# Exempel på användning
+prob_theoretical <- theoretical_probability(P, pi)
+print(paste("Teoretisk sannolikhet: ", round(prob_theoretical, 4)))
 ```
 
 
