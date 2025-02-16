@@ -1,17 +1,11 @@
 ---
-title: "Labb 1"
+title: "Laboration 1 - Markovkedjor"
 author: "Sebastijan Babic & Esbjörn Runesson"
-date: "XXXX--XX--XX"
-output:
-  html_document:
-    toc: true
-    toc_depth: 2
-    theme: cerulean
-    highlight: tango
-  pdf_document:
-    toc: true
-    toc_depth: '2'
+date: "`r format(Sys.Date(), '%Y-%m-%d')`"
+output: 
+  rmdformats::material:
 ---
+
 
 ```{r}
 P <- matrix(c(0, 0, 0, 0.4, 0, 0.6,
@@ -30,8 +24,10 @@ P <- matrix(c(0, 0, 0, 0.4, 0, 0.6,
 På Matematiska institutionen finns en kopiator som inte alltid fungerar perfekt. Dess tillstånd kan beskrivas på en skala från 0 till 5 , där 0 innebär att kopiatorn är helt ur funktion och 5 motsvarar en fullt fungerande maskin. Ju sämre tillstånd kopiatorn är i, desto större är sannolikheten att någon kallar på teknisk support. Tyvärr är det inte alltid som supporten kan återställa kopiatorn till optimalt skick. Ibland lyckas de bara 1 delvis med reparationen, och får maskinen att fungera på nivå 3 . Som ett resultat av detta kommer kopiatorns tillstånd att variera från dag till dag, vilket kan modelleras med en Markovkedja. Övergångsmatrisen för denna Markovkedja, där tillstånd 0 är "helt ur funktion" och 5 är "fullt fungerande", ser ut på följande sätt:
 
 ## Uppgift 1.1
-
+Utgår att vi är i tillstånd 5 och sedan beräknar sannolikhetsfördelningen efter 4,7,14 och 90 dagar. 
 ```{r}
+# Funktion för att beräkna A^n, dvs. övergångsmatrisen efter n steg.
+# Vi börjar med identitetsmatrisen (nollstegs övergång) och multiplicerar sedan A n gånger.
 mpow <- function(A, n) {
 resultat <- diag(nrow(A))
 potens <- n
@@ -50,6 +46,7 @@ Res2 <- mpow(P,7)
 Res3 <- mpow(P,14)
 Res4 <- mpow(P,90)
 
+# Läs av sannolikhetsfördelningen för tillstånd 5 (rad 6)
 Res[6,] #a)
 Res2[6,] #b)
 Res3[6,] #c)
@@ -61,6 +58,7 @@ Res4[6,] #d)
 Om vi börjar i tillstånd 2 så får vi istället:
 
 ```{r}
+# Rad 3 för tillstånd 2
 print(Res[3,]) #a)
 print(Res2[3,]) #b)
 print(Res3[3,]) #c)
@@ -68,68 +66,79 @@ print(Res4[3,]) #d)
 ```
 
 # Uppgift 2
+Vi ska nu undersöka när $P^n$ konvergerar och beräkna den stationära fördelningen $\pi$ som har egenskapen att 
+$$
+\pi = \pi P,
+$$
+som vi kan enkelt skriva om som 
+$$
+\pi (\mathbb{I} - P) = 0.
+$$
+
 
 ## Uppgift 2.1
 
+
+
 ```{r}
-mpow <- function(A, n) {
-resultat <- diag(nrow(A))
-potens <- n
-while (potens > 0) {
-resultat <- A %*% resultat
-potens <- potens - 1
-}
-return(resultat)
-}
-
+# Funktion som kontrollerar om alla rader i en matris är lika (upp till d 
+# decimaler)
 rows_equal <- function(A, d = 4) {
-A_new <- trunc(A * 10^d) # förstora talet och ta heltalsdelen
-for (k in 2:nrow(A_new)) {
-# Kolla om alla element i rad 1 är lika med motsvarande element i rad k
-if (!all(A_new[1, ] == A_new[k, ])) {
-# Om något element skiljer sig så är raderna ej lika
-return(FALSE)
-}
-}
-# Hamnar vi här så var alla rader lika
-return(TRUE)
+  A_new <- trunc(A * 10^d)  # Multiplicera med 10^d och ta heltalsdelen
+  for (k in 2:nrow(A_new)) {
+    # Jämför rad 1 med övriga rader
+    if (!all(A_new[1, ] == A_new[k, ])) {
+      return(FALSE)
+    }
+  }
+  return(TRUE)  # Alla rader är lika
 }
 
+# Funktion som jämför två matriser elementvis med precision d
 matrices_equal <- function(A, B, d = 4) {
-A_new <- trunc(A * 10^d)
-B_new <- trunc(B * 10^d)
-if (all(A_new == B_new)) {
-return(TRUE)
-} else {
-return(FALSE)
-}
+  A_new <- trunc(A * 10^d)
+  B_new <- trunc(B * 10^d)
+  return(all(A_new == B_new))
 }
 
-# Funktion för att hitta det minsta n där P^n konvergerar enligt kriterierna
-find_convergence <- function(P, max_iter = 1000, d = 4) {
+# Funktion för att hitta det minsta n där P^n konvergerar enligt kriterierna:
+# - P^n och P^(n+1) ska vara lika upp till d decimaler
+# - Alla rader i P^n ska vara identiska
+find_convergence <- function(P, max_iter = 1000, d = 4) { # Kör med n = 1000
   n <- 1
   while (n <= max_iter) {
-    P_n <- mpow(P, n)       # Beräkna P^n
-    P_n_plus_1 <- mpow(P, n + 1)  # Beräkna P^{n+1}
+    P_n <- mpow(P, n)         # Beräkna P^n
+    P_n_plus_1 <- mpow(P, n + 1)  # Beräkna P^(n+1)
     
-    # Kontrollera om P^n ≈ P^{n+1} och om alla rader i P^n är identiska
+    # Om båda villkoren är uppfyllda, skriv ut konvergensn och returnera n
     if (matrices_equal(P_n, P_n_plus_1, d) && rows_equal(P_n, d)) {
       cat("Konvergens uppnådd vid n =", n, "\n")
-      cat("En rad i P^n (med 4 decimalers noggrannhet):\n")
-      print(round(P_n[1, ], d))  # Skriv ut en rad med 4 decimaler
+      cat("En rad i P^n (med", d, "decimalers noggrannhet):\n")
+      print(round(P_n[1, ], d))  # Skriv ut en rad (alla är lika)
       return(n)
     }
-    
-    n <- n + 1  # Öka n och fortsätt loopen
+    n <- n + 1  # Öka n och fortsätt leta
   }
-  
   cat("Ingen konvergens hittades inom", max_iter, "iterationer.\n")
   return(NA)
 }
+
 find_convergence(P)
+
 ```
 
 ## Uppgift 2.2
+Som tidigare sagt ska vi nu lösa ekvationen 
+$$
+\pi (\mathbb{I} - P) = 0,
+$$
+
+med villkoret 
+$$
+\pi_0 + \dots + \pi_5 = 1.
+$$
+
+
 
 ```{r}
 # Antalet tillstånd
@@ -144,7 +153,8 @@ I <- diag(n)
 A <- t(I - P)
 
 # Lägg till normaliseringsvillkoret: pi0 + pi1 + ... + pi5 = 1
-A <- rbind(A, rep(1, n))
+A <- rbind(A, rep(1, n)) # "bindar" en extra ekvation för att vi ska få en unik 
+#lösning
 b <- c(rep(0, n), 1)
 
 # Lös systemet med qr.solve 
@@ -154,7 +164,20 @@ cat("Stationära fördelningen (lösning av pi = pi P) är:\n")
 print(round(pi_stationary, 9))
 ```
 
+
+
+
+
+
+
+
+
+
 # Uppgift 3
+
+I denna uppgift ska vi simulera Markovkedjan under 1000 dagar med start i till
+stånd 5 för att se om empiriska fördelningen konvergerar mot den stationära 
+fördelningen. 
 ```{r}
 # Simuleringsfunktion för Markovkedjan
 simulate_chain <- function(P, init, n_steps) {
@@ -175,29 +198,112 @@ simulate_chain <- function(P, init, n_steps) {
 
 
 ```{r}
-set.seed(123)  # För att resultaten ska bli reproducerbara
+set.seed(123)
 
-# Simulera kedjan i 1000 dagar med start i tillstånd 5
+# Simulera kedjan under 1000 dagar med start i tillstånd 5
 chain <- simulate_chain(P, init = 5, n_steps = 1000)
 
 # Räkna hur många gånger varje tillstånd inträffar
 empirical_counts <- table(chain)
-# Omvandla antalet till en andelsfördelning
+# Omvandla räkningen till en andelsfördelning
 empirical_distribution <- empirical_counts / length(chain)
 
-# Skriv ut den empiriska fördelningen
-print(empirical_distribution)
+# För att jämföra med den stationära fördelningen (pi_stationary) säkerställer vi att båda vektorerna har samma ordning (tillstånd 0-5)
+states <- 0:5
+names(empirical_distribution) <- states
+names(pi_stationary) <- states
 
-# Rita ett stapeldiagram
-barplot(empirical_distribution,
-        main = "Empirisk fördelning efter 1000 dagar",
-        xlab = "Tillstånd (0-5)",
+# Skapa en matris där varje kolumn representerar ett tillstånd och raderna de två fördelningarna
+comparison_matrix <- rbind("Empirisk" = empirical_distribution, 
+                             "Stationär" = round(pi_stationary, 4)) # 4 decimaler verkar ge rimlig diagram
+
+# Rita ett stapeldiagram med staplar sida vid sida (beside = TRUE)
+barplot(comparison_matrix, beside = TRUE, 
+        col = c("lightblue", "salmon"),
+        main = "Jämförelse: Empirisk vs. Stationär fördelning",
+        xlab = "Tillstånd (0-5)", 
         ylab = "Andel",
-        col = "lightblue")
-
+        ylim = c(0, max(comparison_matrix) * 1.2),
+        legend.text = TRUE,
+        args.legend = list(x = "topright"))
 ```
 
 
 
 
 # Uppgift 4
+Om maskinen idag är i tillstånd 5, vad är då sannolikheten att den igår befann sig i tillstånd 1? Vi ska undersöka denna fråga på två sätt:
+
+## Uppgift 4.1
+Vi använder oss av simuleringen från uppgift 3, mer specifikt variablen `chain`. Vi gör det för att räkna ut antalet dagar då, givet att maskinen är i tillstånd 5. 
+
+
+```{r}
+# Hitta alla index i chain där maskinen är i tillstånd 5
+indices <- which(chain == 5)
+# Uteslut dag 1 (för vilken vi inte har någon föregående dag)
+indices <- indices[indices > 1]
+
+# Räkna antalet gånger där dagen innan var tillstånd 1
+count_prev1 <- sum(chain[indices - 1] == 1)
+
+# Beräkna den empiriska sannolikheten:
+empirical_prob <- count_prev1 / length(indices)
+
+cat("Empirisk sannolikhet P(X_(n-1)=1 | X_n=5):", round(empirical_prob, 4), "\n")
+
+```
+
+
+
+## Uppgift 4.2
+
+
+I stationär läge har vi
+$$
+P(X_{n-1}=1 \mid X_n = 5) = \frac{P(X_{n}=5 \mid X_{n-1} = 1) P(X_{n-1}=1)}{P(X_n = 5)}
+$$
+
+- $P\left(X_n=5 \mid X_{n-1}=1\right)$ är övergångssannolikheten från tillstånd 1 till 5 . I vår matris $P$ (där raderna motsvarar tillstånden $0,1, \ldots, 5$ ) finns detta på rad 2 , kolumn 6, dvs. $P[2,6]=0.4$.
+
+- $P\left(X_{n-1}=1\right)$ och $P\left(X_n=5\right)$ är stationära sannolikheter, vilka vi får från den stationära fördelningen pi_stationary (från Uppgift 2.2). Eftersom tillstånd 1 motsvarar index 2 och tillstånd 5 index 6 i pi_stationary så har vi:
+- $\pi_1 = \text{pi_stationary}[2]$
+- $\pi_5 = \text{pi_stationary}[6]$
+
+
+
+
+```{r}
+# Sannolikheten att gå från tillstånd 1 till 5 (rad 2, kolumn 6 i P)
+p_1_to_5 <- P[2, 6]
+
+# Hämta stationära sannolikheter från pi_stationary
+pi_state1 <- pi_stationary[2]
+pi_state5 <- pi_stationary[6]
+
+# Använd Bayes formel:
+theoretical_prob <- (p_1_to_5 * pi_state1) / pi_state5
+
+cat("Teoretisk sannolikhet P(X_(n-1)=1 | X_n=5) enligt Bayes:", round(theoretical_prob, 4), "\n")
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
