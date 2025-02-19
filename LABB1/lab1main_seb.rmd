@@ -2,11 +2,17 @@
 title: "Laboration 1 - Markovkedjor"
 author: "Sebastijan Babic & Esbjörn Runesson"
 date: "`r format(Sys.Date(), '%Y-%m-%d')`"
-output: 
-  rmdformats::material:
+output:
+  pdf_document:
+    toc: true
+    toc_depth: '2'
+  html_document:
+    toc: true
+    toc_depth: 2
+    theme: cerulean
+    highlight: tango
 ---
-
-
+\newpage
 ```{r}
 P <- matrix(c(0, 0, 0, 0.4, 0, 0.6,
               0.1, 0.1, 0, 0.4, 0, 0.4,
@@ -64,7 +70,7 @@ print(Res2[3,]) #b)
 print(Res3[3,]) #c)
 print(Res4[3,]) #d)
 ```
-
+\newpage
 # Uppgift 2
 Vi ska nu undersöka när $P^n$ konvergerar och beräkna den stationära fördelningen $\pi$ som har egenskapen att 
 $$
@@ -161,7 +167,7 @@ b <- c(rep(0, n), 1)
 pi_stationary <- qr.solve(A, b)
 
 cat("Stationära fördelningen (lösning av pi = pi P) är:\n")
-print(round(pi_stationary, 9))
+print(round(pi_stationary, 4))
 ```
 
 
@@ -170,7 +176,7 @@ print(round(pi_stationary, 9))
 
 
 
-
+\newpage
 
 
 # Uppgift 3
@@ -197,7 +203,7 @@ simulate_chain <- function(P, init, n_steps) {
 ```
 
 
-```{r}
+```{r, fig.cap="Histogram som visar jämförelsen i den empiriska och stationära fördelningen. Röda kolumnerna visar andelen som vi befinner oss i tillstånd 0 till 5, samma för blå men empiriskt istället. Ser någorlunda liknande kolumner."}
 set.seed(123)
 
 # Simulera kedjan under 1000 dagar med start i tillstånd 5
@@ -208,7 +214,8 @@ empirical_counts <- table(chain)
 # Omvandla räkningen till en andelsfördelning
 empirical_distribution <- empirical_counts / length(chain)
 
-# För att jämföra med den stationära fördelningen (pi_stationary) säkerställer vi att båda vektorerna har samma ordning (tillstånd 0-5)
+# För att jämföra med den stationära fördelningen (pi_stationary) säkerställer vi att 
+#båda vektorerna har samma ordning (tillstånd 0-5)
 states <- 0:5
 names(empirical_distribution) <- states
 names(pi_stationary) <- states
@@ -229,7 +236,7 @@ barplot(comparison_matrix, beside = TRUE,
 ```
 
 
-
+\newpage
 
 # Uppgift 4
 Om maskinen idag är i tillstånd 5, vad är då sannolikheten att den igår befann sig i tillstånd 1? Vi ska undersöka denna fråga på två sätt:
@@ -239,16 +246,21 @@ Vi använder oss av simuleringen från uppgift 3, mer specifikt variablen `chain
 
 
 ```{r}
-# Hitta alla index i chain där maskinen är i tillstånd 5
-indices <- which(chain == 5)
-# Uteslut dag 1 (för vilken vi inte har någon föregående dag)
-indices <- indices[indices > 1]
+# Steg 1: Skapa två vektorer:
+# - 'prev_state' innehåller alla tillstånd utom det sista (dvs. "dagen innan").
+# - 'curr_state' innehåller alla tillstånd utom det första (dvs. "dagens" tillstånd).
+prev_state <- chain[-length(chain)]  # Alla element utom sista
+curr_state <- chain[-1]              # Alla element utom första
 
-# Räkna antalet gånger där dagen innan var tillstånd 1
-count_prev1 <- sum(chain[indices - 1] == 1)
+# Steg 2: Räkna övergångarna där maskinen går från tillstånd 1 (igår) till 5 (idag)
+num_transitions <- sum(curr_state == 5 & prev_state == 1)
 
-# Beräkna den empiriska sannolikheten:
-empirical_prob <- count_prev1 / length(indices)
+# Steg 3: Räkna antalet dagar då maskinen är i tillstånd 5 (för vilka vi har ett föregående tillstånd)
+num_5_today <- sum(curr_state == 5)
+
+# Steg 4: Beräkna den empiriska sannolikheten för att maskinen var i tillstånd 1 igår, 
+# givet att den är i tillstånd 5 idag.
+empirical_prob <- num_transitions / num_5_today
 
 cat("Empirisk sannolikhet P(X_(n-1)=1 | X_n=5):", round(empirical_prob, 4), "\n")
 
@@ -267,8 +279,9 @@ $$
 - $P\left(X_n=5 \mid X_{n-1}=1\right)$ är övergångssannolikheten från tillstånd 1 till 5 . I vår matris $P$ (där raderna motsvarar tillstånden $0,1, \ldots, 5$ ) finns detta på rad 2 , kolumn 6, dvs. $P[2,6]=0.4$.
 
 - $P\left(X_{n-1}=1\right)$ och $P\left(X_n=5\right)$ är stationära sannolikheter, vilka vi får från den stationära fördelningen pi_stationary (från Uppgift 2.2). Eftersom tillstånd 1 motsvarar index 2 och tillstånd 5 index 6 i pi_stationary så har vi:
-- $\pi_1 = \text{pi_stationary}[2]$
-- $\pi_5 = \text{pi_stationary}[6]$
+- $\pi_1 = \text{pi\_stationary}[2]$
+- $\pi_5 = \text{pi\_stationary}[6]$
+
 
 
 
