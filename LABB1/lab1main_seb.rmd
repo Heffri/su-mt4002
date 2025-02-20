@@ -242,7 +242,7 @@ barplot(comparison_matrix, beside = TRUE,
 Om maskinen idag är i tillstånd 5, vad är då sannolikheten att den igår befann sig i tillstånd 1? Vi ska undersöka denna fråga på två sätt:
 
 ## Uppgift 4.1
-Vi använder oss av simuleringen från uppgift 3, mer specifikt variablen `chain`. Vi gör det för att räkna ut antalet dagar då, givet att maskinen är i tillstånd 5. 
+Vi använder oss av simuleringen från uppgift 3, mer specifikt variablen `chain`. Vi gör det för att räkna ut antalet dagar då, givet att maskinen är i tillstånd 5 befann oss i tillstånd 1 igår.
 
 
 ```{r}
