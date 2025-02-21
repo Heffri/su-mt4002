@@ -9,7 +9,7 @@ output:
     theme: cerulean          
     highlight: tango         
 ---
-# Givna funktioner
+# Givna funktioner 
 ```{r}
 # Denna funktion simulerar en spelomgång med vinstsannolikhet p och ett visst kapital.
 # Funktionen returnerar det nya kapitalet beroende på utfallet.
@@ -31,11 +31,16 @@ mpow <- function(A, n) {
   resultat <- diag(nrow(A))
   potens <- n
   while (potens > 0) {
-  resultat <- A %*% resultat
-  potens <- potens - 1
+    resultat <- A %*% resultat
+    potens <- potens - 1
   }
   return(resultat)
 }
+
+
+
+
+
 # Låt A vara en matris innehållandes sannolikheter. Denna funktion testar om
 # raderna i A är identiska upp till de d första decimalerna. Som ett exempel,
 # talet 0.12309 är lika med 0.12301 upp till den fjärde decimalen, men avrundat
@@ -72,9 +77,10 @@ matrices_equal <- function(A, B, d = 4) {
 ```
 
 # Uppgift 1
+
 ## Uppgift 1.1
 
-Funktionen en_spelomgang i avsnittet "Användbara funktioner" tar en vinstsannolikhet p och ett kapital kapital som input, och ger som output det nya kapitalet efter en spelomgång, enligt definitionen som gavs i introduktionen ovan. Denna funktion utnyttjar kommandot runif (1) som genererar en slumpvariabel $U$ från en likformig fördelning på intervallet $[0,1]$. Som du bör känna till vid det här laget så gäller det att $\mathbb{P}(U<p)=p$ för $p \in[0,1]$.
+Funktionen en_spelomgang i avsnittet "Användbara funktioner" tar en vinstsannolikhet p och ett kapital kapital som input, och ger som output det nya kapitalet efter en spelomgång, enligt definitionen som gavs i introduktionen. Denna funktion utnyttjar kommandot runif (1) som genererar en slumpvariabel $U$ från en likformig fördelning på intervallet $[0,1]$. Som du bör känna till vid det här laget så gäller det att $\mathbb{P}(U<p)=p$ för $p \in[0,1]$.
 Din uppgift är nu att skriva en funktion kim_spelar, som simulerar Kims spelande enligt definitionen som gavs i introduktionen. Funktionen ska ta som input en vinstsannolikhet p och ett startkapital kapital. Som output ska funktionen returnera en 1:a (dvs return(1)) om Kims kapital når 6 kronor (Kim vinner), och en 0:a (dvs return(0)) om Kims kapital når 0 kronor (Kim förlorar). Funktionen kim_spelar ska använda sig av funktionen en_spelomgang.
 Tips:
 - Det kan vara fördelaktigt att definiera en tillfällig variabel för att spåra det aktuella kapitalet, vilken uppdateras efter varje spelomgång.
