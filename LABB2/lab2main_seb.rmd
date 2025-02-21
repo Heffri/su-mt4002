@@ -2,14 +2,14 @@
 title: "Labb 2"
 author: Sebastijan Babic & Esbjörn Runesson
 date: "XXXX--XX--XX"
-output: 
+output:
   html_document:
-    toc: true                
-    toc_depth: 2             
-    theme: cerulean          
-    highlight: tango         
+    toc: true
+    toc_depth: 2
+    theme: cerulean
+    highlight: tango
 ---
-# Givna funktioner 
+# Givna funktioner
 ```{r}
 # Denna funktion simulerar en spelomgång med vinstsannolikhet p och ett visst kapital.
 # Funktionen returnerar det nya kapitalet beroende på utfallet.
@@ -80,15 +80,45 @@ matrices_equal <- function(A, B, d = 4) {
 
 ## Uppgift 1.1
 
-Funktionen en_spelomgang i avsnittet "Användbara funktioner" tar en vinstsannolikhet p och ett kapital kapital som input, och ger som output det nya kapitalet efter en spelomgång, enligt definitionen som gavs i introduktionen. Denna funktion utnyttjar kommandot runif (1) som genererar en slumpvariabel $U$ från en likformig fördelning på intervallet $[0,1]$. Som du bör känna till vid det här laget så gäller det att $\mathbb{P}(U<p)=p$ för $p \in[0,1]$.
-Din uppgift är nu att skriva en funktion kim_spelar, som simulerar Kims spelande enligt definitionen som gavs i introduktionen. Funktionen ska ta som input en vinstsannolikhet p och ett startkapital kapital. Som output ska funktionen returnera en 1:a (dvs return(1)) om Kims kapital når 6 kronor (Kim vinner), och en 0:a (dvs return(0)) om Kims kapital når 0 kronor (Kim förlorar). Funktionen kim_spelar ska använda sig av funktionen en_spelomgang.
+Funktionen `en_spelomgang` i avsnittet "Användbara funktioner" tar en vinstsannolikhet p och ett kapital kapital som input, och ger som output det nya kapitalet efter en spelomgång, enligt definitionen som gavs i introduktionen. Denna funktion utnyttjar kommandot `runif(1)` som genererar en slumpvariabel $U$ från en likformig fördelning på intervallet $[0,1]$. Som du bör känna till vid det här laget så gäller det att $\mathbb{P}(U<p)=p$ för $p \in[0,1]$.
+Din uppgift är nu att skriva en funktion `kim_spelar`, som simulerar Kims spelande enligt definitionen som gavs i introduktionen. Funktionen ska ta som input en vinstsannolikhet p och ett startkapital kapital. Som output ska funktionen returnera en 1:a (dvs return(1)) om Kims kapital når 6 kronor (Kim vinner), och en 0:a (dvs return(0)) om Kims kapital når 0 kronor (Kim förlorar). Funktionen kim_spelar ska använda sig av funktionen en_spelomgang.
 Tips:
 - Det kan vara fördelaktigt att definiera en tillfällig variabel för att spåra det aktuella kapitalet, vilken uppdateras efter varje spelomgång.
 - Kommandot repeat . . . fungerar som en oändlig loop, men kan brytas genom att använda break eller return (. . .) någonstans innanför \{ och \}. Här ersätts . . . med kod.
 
+```{r}
+kim_spelar <- function(p, kapital) {
+    repeat {
+        kapital <- en_spelomgang(p, kapital)
+        if (kapital == 6) {
+            return(1)
+        }
+    }
+}
+```
+
+
+
+
+
+
+
+
 ## Uppgift 1.2
-Skriv en funktion sim_kim, som gör $n$ simuleringar av Kims spelande och räknar hur många gånger hen går med vinst. Funktionen ska använda sig av kim_spelar ovan, och ska som argument ta en vinstsannolikhet p, ett startkapital kapital, och antalet simuleringar n (default $=1000$ ). Output ska vara antalet simuleringar som slutade med vinst.
-Gör nu 1000 simuleringar med hjälp av funktionen du just skrev. Hur många gånger lyckades Kim nå sitt mål, respektive blev pank? Antag att Kim startar med 1 krona i kapital vid varje simulering, och att vinstsannolikheten vid varje spelomgång är 0.5 . Använd funktionen set.seed med ditt 6 -siffriga födelsedatum som argument innan du anropar sim_kim.
+Skriv en funktion `sim_kim`, som gör $n$ simuleringar av Kims spelande och räknar hur många gånger hen går med vinst. Funktionen ska använda sig av `kim_spelar` ovan, och ska som argument ta en vinstsannolikhet p, ett startkapital kapital, och antalet simuleringar n (default $=1000$ ). Output ska vara antalet simuleringar som slutade med vinst.
+Gör nu 1000 simuleringar med hjälp av funktionen du just skrev. Hur många gånger lyckades Kim nå sitt mål, respektive blev pank? Antag att Kim startar med 1 krona i kapital vid varje simulering, och att vinstsannolikheten vid varje spelomgång är 0.5 . Använd funktionen `set.seed` med ditt 6 -siffriga födelsedatum som argument innan du anropar `sim_kim`.
+
+```{r}
+set.seed(040911)
+sim_kim <- function(p, kapital, n) {
+    return(sum(replicate(n, kim_spelar(p, kapital))))
+}
+
+sim_kim(0.5, 1, 1000)
+```
+
+
+
 
 
 ## Uppgift 1.3
