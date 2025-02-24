@@ -75,26 +75,30 @@ matrices_equal <- function(A, B, d = 4) {
   }
 }
 ```
-
+\newpage
 # Uppgift 1
 
 ## Uppgift 1.1
 
 Funktionen `en_spelomgang` i avsnittet "Användbara funktioner" tar en vinstsannolikhet p och ett kapital kapital som input, och ger som output det nya kapitalet efter en spelomgång, enligt definitionen som gavs i introduktionen. Denna funktion utnyttjar kommandot `runif(1)` som genererar en slumpvariabel $U$ från en likformig fördelning på intervallet $[0,1]$. Som du bör känna till vid det här laget så gäller det att $\mathbb{P}(U<p)=p$ för $p \in[0,1]$.
-Din uppgift är nu att skriva en funktion `kim_spelar`, som simulerar Kims spelande enligt definitionen som gavs i introduktionen. Funktionen ska ta som input en vinstsannolikhet p och ett startkapital kapital. Som output ska funktionen returnera en 1:a (dvs return(1)) om Kims kapital når 6 kronor (Kim vinner), och en 0:a (dvs return(0)) om Kims kapital når 0 kronor (Kim förlorar). Funktionen kim_spelar ska använda sig av funktionen en_spelomgang.
+- Din uppgift är nu att skriva en funktion `kim_spelar`, som simulerar Kims spelande enligt definitionen som gavs i introduktionen. Funktionen ska ta som input en vinstsannolikhet p och ett startkapital kapital. Som output ska funktionen returnera en 1:a (dvs return(1)) om Kims kapital når 6 kronor (Kim vinner), och en 0:a (dvs return(0)) om Kims kapital når 0 kronor (Kim förlorar). Funktionen kim_spelar ska använda sig av funktionen en_spelomgang.
 Tips:
 - Det kan vara fördelaktigt att definiera en tillfällig variabel för att spåra det aktuella kapitalet, vilken uppdateras efter varje spelomgång.
 - Kommandot repeat . . . fungerar som en oändlig loop, men kan brytas genom att använda break eller return (. . .) någonstans innanför \{ och \}. Här ersätts . . . med kod.
 
 ```{r}
 kim_spelar <- function(p, kapital) {
-    repeat {
-        kapital <- en_spelomgang(p, kapital)
-        if (kapital == 6) {
-            return(1)
-        }
+  repeat {
+    kapital <- en_spelomgang(p, kapital)
+    if (kapital == 6) {
+      return(1)  # Kim vinner
     }
+    if (kapital == 0) {
+      return(0)  # Kim förlorar
+    }
+  }
 }
+
 ```
 
 
@@ -127,8 +131,20 @@ Anmärkning:
 
 - Att generalisera ett problem och dela upp det i mindre delproblem är en effektiv strategi. Genom att skriva korta precisa funktioner, som vi har gjort här, kan vi öka kodens tydlighet och återanvändbarhet.
 
+
+
+
+```{r}
+sim_kim(0.5, 1, 1000)
+sim_kim(0.5, 2, 1000)
+sim_kim(0.5, 3, 1000)
+sim_kim(0.5, 4, 1000)
+sim_kim(0.5, 5, 1000)
+```
+Vilket ger oss mycket rimliga resultat då sannolikheten ökar markant då startkapitalet är närmare kapital-målet. 
+
+
 # Uppgift 2
-## Uppgift 2.1
 Ett annat sätt att undersöka Kims chans att lyckas är så här: Om Kims kapital efter $n$ spelomgångar är $X_n$ kronor (där $X_0$ betecknar startkapitalet) så kommer följden $X_n$ att bilda en Markovkedja. Den kommer förr eller senare att hamna i något av de båda absorberande tillstånden 0 eller 6. Låt oss beteckna dessa båda händelser med $X_{\infty}=0$ respektive $X_{\infty}=6$. Sannolikheten $\mathbb{P}\left(X_{\infty}=6\right)$ kan vi approximativt räkna ut genom att utnyttja en ekvation som säger att om $\boldsymbol{P}$ är övergångsmatrisen för en absorberande Markovkedja så gäller att
 
 $$
@@ -139,10 +155,23 @@ P^n \rightarrow\left(\begin{array}{cc}
 $$
 
 då $n \rightarrow \infty$. Här ska matrisen $\boldsymbol{P}$ vara skriven på "standardform", dvs de fem transienta tillstånden (1-5) ska komma först, och de båda rekurrenta sist. Sätt tillstånd 0 sist.
-1. Ett av elementen i matrisen $\boldsymbol{S} \boldsymbol{R}$ beskriver sannolikheten att absorption sker i tillstånd 6 när spelaren startar med 1 krona. Vilket element är det?
+
+
+
+
+
+
+## Uppgift 2.1 ------------ se över
+Ett av elementen i matrisen $\boldsymbol{S} \boldsymbol{R}$ beskriver sannolikheten att absorption sker i tillstånd 6 när spelaren startar med 1 krona. 
+
+- Vilket element är det?
+
+Om vi skriver om övergångsmatrisen i standardform med de transienta tillstånden först (1, 2, 3, 4, 5) och de absorberande tillstånden sist (6 och 0, där vi sätter 0 sist), så innebär det att om spelaren startar med 1 krona (det första transienta tillståndet) så är sannolikheten att så småningom absorberas i tillstånd 6 given av elementet i den första raden och första kolumnen i $S R$-matrisen, dvs. $(SR)_{1,1}$.
+
+
 
 ## Uppgift 2.2
-2. Skriv en funktion kims_matris i $R$, som tar som input en vinstsannolikhet $p$ och ger som output övergångsmatrisen för denna vinstsannolikhet. Du får följande till hjälp - allt du behöver göra är att byta ut några av 0:orna mot rätt sannolikhet.
+Skriv en funktion kims_matris i $R$, som tar som input en vinstsannolikhet $p$ och ger som output övergångsmatrisen för denna vinstsannolikhet. Du får följande till hjälp - allt du behöver göra är att byta ut några av 0:orna mot rätt sannolikhet.
 
 ```{r}
 kims_matris <- function(p) {
@@ -157,6 +186,12 @@ kims_matris <- function(p) {
   ), nrow = 7, byrow = TRUE)
 }
 ```
+
+
+
+
+
+
 
 ## Uppgift 2.3
 Skriv en funktion hitta_SR som tar som input en övergångsmatris P skriven på standardform och ger som output motsvarande matris $\boldsymbol{S} \boldsymbol{R}$. Matrisen $\boldsymbol{S} \boldsymbol{R}$ kan räknas ut på teoretisk väg eller genom att avgöra för vilket $n$ som $P_n \approx P_{n+1}$ med fyra decimalers noggrannhet.
