@@ -166,7 +166,9 @@ Ett av elementen i matrisen $\boldsymbol{S} \boldsymbol{R}$ beskriver sannolikhe
 
 - Vilket element är det?
 
-Om vi skriver om övergångsmatrisen i standardform med de transienta tillstånden först (1, 2, 3, 4, 5) och de absorberande tillstånden sist (6 och 0, där vi sätter 0 sist), så innebär det att om spelaren startar med 1 krona (det första transienta tillståndet) så är sannolikheten att så småningom absorberas i tillstånd 6 given av elementet i den första raden och första kolumnen i $S R$-matrisen, dvs. $(SR)_{1,1}$.
+Om vi skriver om övergångsmatrisen i standardform med de transienta tillstånden först (1, 2, 3, 4, 5) och de absorberande tillstånden sist (6 och 0, där vi sätter 0 sist) så kan vi hitta sannolikheten att vi hamnar i tillstånd 6 när spelaren startar med 1 krona är i första raden sista kolumnen. 
+
+
 
 
 
@@ -176,13 +178,13 @@ Skriv en funktion kims_matris i $R$, som tar som input en vinstsannolikhet $p$ o
 ```{r}
 kims_matris <- function(p) {
   matrix(c(
-    0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0
+    0, p, 0, 0, 0, 0, 0,
+    1-p, 0, p, 0, 0, 0, 0,
+    0, 1-p, 0, p, 0, 0, 0,
+    0, 0, 1-p, 0, p, 0, 0,
+    0, 0, 0, 1-p, 0, p, 0,
+    0, 0, 0, 0, 0, 1, 0, # tillstånd 6 abseroberande
+    0, 0, 0, 0, 0, 0, 1 # tillstånd 0 absorberande
   ), nrow = 7, byrow = TRUE)
 }
 ```
@@ -199,6 +201,16 @@ Om du väljer att skriva funktionen med hjälp av de teoretiska resultaten så m
 Hur många av de tusen spelen i uppgift 1 "borde" ha slutat lyckligt för Kim, när startkapitalet var 1,2 , 3,4 respektive 5 kronor? Stämmer talen i $\boldsymbol{S} \boldsymbol{R}$ överens med de tal du kom fram till i uppgift 1 ?
 Kommentar:
 - Chansen att lyckas nå till 6 kronor tycks öka med ökande startkapital enligt en ganska enkel formel. Genom att titta på resultaten hittills kan du förmodligen gissa hur formeln ser ut.
+
+
+
+
+
+
+
+
+
+
 
 # Uppgift 3
 De flesta kasinon drivs inte ideellt, utan spelarna förlorar pengar i det lănga loppet. Vi ska nu undersöka hur chansen att nå sexkronorsnivån ändras när sannolikheten att förlora ett spel är större än chansen att vinna. Ett sådant spel kan beskrivas med en Markovkedja med en likadan övergångsmatris som i uppgift två, med skillnaden att $p$ inte är $50 \%$. Undersök chansen att nå från 1 krona till 6 kronor då $p=20 \%, 35 \%, 50 \%, 65 \%$ och $80 \%$. Vi bryr oss inte om att räkna på något annat startkapital än 1 krona. Använd dels simulering, som i uppgift 1, dels samma metod som i uppgift 2. Här får ni användning av de funktioner ni skrivit tidigare. Tänk på att det $n$ som krävs för konvergens ändras då $p$ ändras.
