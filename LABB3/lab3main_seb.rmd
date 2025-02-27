@@ -1,11 +1,124 @@
 ---
-title: "Labb 0"
-author: Sebastijan Babic & Esbjörn Runesson
-date: "XXXX--XX--XX"
-output: 
-  html_document:
-    toc: true                
-    toc_depth: 2             
-    theme: cerulean          
-    highlight: tango         
+title: "Labb 2"
+author: "Sebastijan Babic & Esbjörn Runesson"
+date: "`r format(Sys.Date(), '%Y-%m-%d')`"
+output:
+  pdf_document:
+    toc: true
+    toc_depth: 2
 ---
+
+Jobb som skickas till superdatorn enligt en Poison process med intensitet $\lambda$ jobb per timme. 
+
+Exekveringstiderna för dessa jobb är oberoende av varandra och exponentialfördelade med väntevärde $1/\mu$ timmar.
+
+
+\newpage 
+
+
+# Användbara funktioner
+```{r}
+# Denna funktion utgör ett skal för en födelse-dödsprocess med intensiteter
+# lambda och mu.
+# Funktionen returnerar en lista med tider för tillståndsbyten och tillstånd.
+bd_process <- function(lambda, mu, initial_state = 0, steps = 100) {
+    time_now <- 0
+    state_now <- initial_state
+    # Dessa vektorer ska byggas på i loopen nedan
+    time <- 0
+    state <- initial_state
+    for (i in 1:steps) {
+        # ?
+        if (state_now == 3) {
+            lambda_now <- 0
+        } else {
+            lambda_now <- lambda
+        }
+        # ?
+        if (state_now == 0) {
+            mu_now <- 0
+        } else {
+            mu_now <- mu
+        }
+        # ?
+        time_to_transition <- ...
+        # ?
+        if (...) {
+            state_now <- state_now - 1
+        } else {
+            state_now <- state_now + 1
+        }
+        time_now <- time_now + time_to_transition # vad är time now?
+        time <- c(time, time_now) # vad innehåller vektorn time?
+        state <- c(state, state_now) # vad innehåller vektorn state?
+    }
+    # Returnera en lista med de två vektorerna tid och state
+    list(time = time, state = state)
+}
+```
+
+\newpage
+# Uppgift 1
+Förslag på dem som ska ha tillträde till superdatorn:
+1. Endast professorer har tillträde. Då blir $\lambda=1$ och $\mu=5$.
+2. Professorer och registrerade stundenter har tillträde. Då blir $\lambda=2$ och $\mu=5$.
+3. Vem som helst har tillträde. Då blir $\lambda=5$ och $\mu=5$.
+
+> Förklara vad fördelningen för tiden till nästa tillståndbyte är och vad sannolikheten att processen går upp eller ned ett steg är, beroende på processens tillstånd. Gör det generellt och för förslag 1. 
+
+Vi har en Markovkedja med tre tillstånd $i$: 0, 1 och 2. Tillstånden representerar antalet jobb som finns i systemet. Tiden till nästa tillståndbyte är exponentialfördelad med väntevärde $1/\lambda$. Sannolikheten att processen går upp eller ned ett steg är $p_{i,i+1} = \lambda$ och $p_{i,i-1} = \mu$. Det innebär att tiden till att antalet jobb ökar eller minskar är exponentialfördelad med dem paramaterar som precis nämndes.
+
+Om vi ska basera svaret på förslag 1 så innebär det att det kommer 1 jobb per timme och det tar i snitt 1/5 timme att slutföra jobbet eftersom "servicehastigheten" är 5 jobb per timme. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\newpage
+
+# Uppgift 2
+
+
+
+
+
+
+
+
+
+\newpage
+
+# Uppgift 3
+
+
+
+
+
+
+
+
+\newpage
+# Uppgift 4
+
+
+
+
+
+
+
+\newpage
+
+# Uppgift 5
