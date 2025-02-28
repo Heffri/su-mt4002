@@ -1,19 +1,17 @@
 ---
-title: "Labb 2"
+title: "Labb 3 - Förgreningsprocesser"
 author: "Sebastijan Babic & Esbjörn Runesson"
 date: "`r format(Sys.Date(), '%Y-%m-%d')`"
 output:
   pdf_document:
     toc: true
     toc_depth: 2
+    number_sections: true
+    fig_caption: true
+    highlight: tango
 ---
 
-Jobb som skickas till superdatorn enligt en Poison process med intensitet $\lambda$ jobb per timme. 
-
-Exekveringstiderna för dessa jobb är oberoende av varandra och exponentialfördelade med väntevärde $1/\mu$ timmar.
-
-
-\newpage 
+\newpage
 
 
 # Användbara funktioner
@@ -28,29 +26,40 @@ bd_process <- function(lambda, mu, initial_state = 0, steps = 100) {
     time <- 0
     state <- initial_state
     for (i in 1:steps) {
-        # ?
+
+        # Om tillståndet är 3 så är lambda 0
         if (state_now == 3) {
             lambda_now <- 0
         } else {
             lambda_now <- lambda
         }
-        # ?
+
+
+
+        # Om tillståndet är 0 så är mu 0
         if (state_now == 0) {
             mu_now <- 0
         } else {
             mu_now <- mu
         }
-        # ?
-        time_to_transition <- ...
-        # ?
-        if (...) {
+
+
+
+        time_to_transition <- rexp(1, lambda_now + mu_now) # ty tiden till nästa tillståndsbyte är exponentialfördelad med parametern lambda_now + mu_now
+
+
+
+        # Om tillståndet är 0 så minskar det med 1, annars så ökar det med 1
+        if (state_now == 0) {
             state_now <- state_now - 1
         } else {
             state_now <- state_now + 1
         }
-        time_now <- time_now + time_to_transition # vad är time now?
-        time <- c(time, time_now) # vad innehåller vektorn time?
-        state <- c(state, state_now) # vad innehåller vektorn state?
+
+
+        time_now <- time_now + time_to_transition # time nu är tiden från starten
+        time <- c(time, time_now) # time är en vektor som innehåller alla tider från starten
+        state <- c(state, state_now) # state är en vektor som innehåller alla tillstånd från starten
     }
     # Returnera en lista med de två vektorerna tid och state
     list(time = time, state = state)
@@ -58,19 +67,20 @@ bd_process <- function(lambda, mu, initial_state = 0, steps = 100) {
 ```
 
 \newpage
-# Uppgift 1
+# Förklaring av förgreningsprocessen
+
+
 Förslag på dem som ska ha tillträde till superdatorn:
+
 1. Endast professorer har tillträde. Då blir $\lambda=1$ och $\mu=5$.
 2. Professorer och registrerade stundenter har tillträde. Då blir $\lambda=2$ och $\mu=5$.
 3. Vem som helst har tillträde. Då blir $\lambda=5$ och $\mu=5$.
 
-> Förklara vad fördelningen för tiden till nästa tillståndbyte är och vad sannolikheten att processen går upp eller ned ett steg är, beroende på processens tillstånd. Gör det generellt och för förslag 1. 
+> Förklara vad fördelningen för tiden till nästa tillståndbyte är och vad sannolikheten att processen går upp eller ned ett steg är, beroende på processens tillstånd. Gör det generellt och för förslag 1.
 
 Vi har en Markovkedja med tre tillstånd $i$: 0, 1 och 2. Tillstånden representerar antalet jobb som finns i systemet. Tiden till nästa tillståndbyte är exponentialfördelad med väntevärde $1/\lambda$. Sannolikheten att processen går upp eller ned ett steg är $p_{i,i+1} = \lambda$ och $p_{i,i-1} = \mu$. Det innebär att tiden till att antalet jobb ökar eller minskar är exponentialfördelad med dem paramaterar som precis nämndes.
 
-Om vi ska basera svaret på förslag 1 så innebär det att det kommer 1 jobb per timme och det tar i snitt 1/5 timme att slutföra jobbet eftersom "servicehastigheten" är 5 jobb per timme. 
-
-
+Om vi ska basera svaret på förslag 1 så innebär det att det kommer 1 jobb per timme och det tar i snitt 1/5 timme att slutföra jobbet eftersom "servicehastigheten" är 5 jobb per timme.
 
 
 
@@ -89,7 +99,33 @@ Om vi ska basera svaret på förslag 1 så innebär det att det kommer 1 jobb pe
 
 \newpage
 
-# Uppgift 2
+# Uppgift 2 --- Se över
+> Rita upp $X(t)$ som funktion av $t$, d.v.s. en kurva som rör sig språngvis mellan de fyra värdena $0,1,2$ och 3. För att göra detta ska ni skapa en vektor `time`, som innehäller tidpunkterna för sprången, och en vektor `state`, där motsvarande element anger vilket tillstånd språnget leder till. Vi låter vektorn `state` börja med en nolla, eftersom det är initialtillståndet, och vektorn `time` har en nolla som första element eftersom vi börjar tidsräkningen därifrån.
+
+När ni sedan har fyllt i funktionen korrekt kan ni enkelt kalla den med värden på lambda ( $\lambda$ ) och mu ( $\mu$ ) enligt de tre förslagen som gavs ovan. Exempel:
+
+
+```{r}
+# Sätt slumptalsfröet för reproducerbarhet
+set.seed(040911)
+forslag1 <- bd_process(lambda = 1, mu = 5)
+# Här låter vi argumenten initial_state och steps vara på sina defaultvärden,
+# så de behöver inte anges.
+# Hämta ut vektorerna tid och state
+time1 <- forslag1$time
+state1 <- forslag1$state
+
+# Skapa en trappstegsplot av processen
+plot(stepfun(time1[-1], state1),
+     do.points = FALSE,         # Visa inte punkter
+     xlab = "Tid (timmar)",     # X-axeletikett
+     ylab = "Antal jobb",       # Y-axeletikett
+     main = "Förgreningsprocess med lambda=1, mu=5", # Titel
+     yaxt = "n")                # Inaktivera standard y-axel
+
+# Lägg till anpassad y-axel med heltal
+axis(2, at = c(0:3), las = 2)   # Horisontella etiketter
+```
 
 
 
@@ -102,6 +138,14 @@ Om vi ska basera svaret på förslag 1 så innebär det att det kommer 1 jobb pe
 \newpage
 
 # Uppgift 3
+> Räkna ut hur lảng tid det tog innan systemet hade ändrat tillstånd 500 gånger, för alla tre förslag. För att göra detta behöver du kalla funktionen på nytt för de tre förslagen, med ett nytt värde på steps (vilket?). Jämför tiderna mellan de tre förslagen och reflektera över varför de skiljer sig åt (eller inte).
+
+
+
+
+
+
+
 
 
 
@@ -113,6 +157,15 @@ Om vi ska basera svaret på förslag 1 så innebär det att det kommer 1 jobb pe
 \newpage
 # Uppgift 4
 
+> Skriv en funktion proportion_in_state som tar ett tillstånd $s(0,1,2$ eller 3$)$ och en simulerad födelse-dödsprocess bdp (som t.ex. variabeln forslag1 ovan) och returnerar andelen tid som processen spenderade i det givna tillstảndet. Alltså, det är fördelningen av tiden (t.ex. i procent) som efterfrågas, inte hur många tidsenheter.
+
+- Fundera på vad tiderna i tid-vektorn time som fås från bd_process är och hur de kan omvandlas till tiderna processen spenderade i varje tillstånd den besökte, och vilka element i tillstảndsvektorn state som ska användas.
+
+- Bortse frản det sista elementet i tillstảndsvektorn, eftersom ingen tid spenderats i det sista tillstảndet processen hoppade till.
+
+> Kalla nu pả funktionen bd_process pả nytt med steps $=1000$ för vart och ett av förslagen, och räkna för vart och ett av dem ut hur stor del av tiden som har tillbringats i tillstảnd $0,1,2$ respektive 3 . Avgör vilket eller vilka av förslagen $1-3$ som är acceptabla för institutionsstyrelsen.
+
+
 
 
 
@@ -122,3 +175,4 @@ Om vi ska basera svaret på förslag 1 så innebär det att det kommer 1 jobb pe
 \newpage
 
 # Uppgift 5
+> Ange en formel för den stationära fördelningen som funktion av kvoten $\rho=\lambda / \mu$. Bestäm den stationära fördelningen för vart och ett av de tre förslagen. För vilka förslag "borde" systemet fă godkänt?
