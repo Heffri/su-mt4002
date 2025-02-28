@@ -1,16 +1,26 @@
 ---
-title: "Labb 2"
+title: "Labb 2 - Markovkedjor"
 author: "Sebastijan Babic & Esbjörn Runesson"
 date: "`r format(Sys.Date(), '%Y-%m-%d')`"
 output:
   pdf_document:
     toc: true
     toc_depth: 2
+    number_sections: true
+    fig_caption: true
+    highlight: tango
+    df_print: kable
 ---
+```{r setup, include=FALSE}
+# Globala inställningar
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+
+
+
 \newpage
 
-
-## Givna funktioner
 ```{r}
 # Denna funktion simulerar en spelomgång med vinstsannolikhet p och ett visst kapital.
 # Funktionen returnerar det nya kapitalet beroende på utfallet.
@@ -116,9 +126,9 @@ y
 
 
 \newpage
-## Uppgift 1
+# Uppgift 1
 
-### Uppgift 1.1 - Skapa en funktion för en spelomgång
+## Funktion för en spelomgång
 
 Funktionen `en_spelomgang` i avsnittet "Användbara funktioner" tar en vinstsannolikhet p och ett kapital kapital som input, och ger som output det nya kapitalet efter en spelomgång, enligt definitionen som gavs i introduktionen. Denna funktion utnyttjar kommandot `runif(1)` som genererar en slumpvariabel $U$ från en likformig fördelning på intervallet $[0,1]$. Som du bör känna till vid det här laget så gäller det att $\mathbb{P}(U<p)=p$ för $p \in[0,1]$.
 
@@ -140,9 +150,14 @@ kim_spelar <- function(p, kapital) {
 
 ```
 
-### Uppgift 1.2 - Simulering av Kims spelande
+## Simulering av Kims spelande
 > Skriv en funktion `sim_kim`, som gör $n$ simuleringar av Kims spelande och räknar hur många gånger hen går med vinst. Funktionen ska använda sig av `kim_spelar` ovan, och ska som argument ta en vinstsannolikhet p, ett startkapital kapital, och antalet simuleringar n (default $=1000$ ). Output ska vara antalet simuleringar som slutade med vinst.
-> Gör nu 1000 simuleringar med hjälp av funktionen du just skrev. Hur många gånger lyckades Kim nå sitt mål, respektive blev pank? Antag att Kim startar med 1 krona i kapital vid varje simulering, och att vinstsannolikheten vid varje spelomgång är 0.5 . Använd funktionen `set.seed` med ditt 6 -siffriga födelsedatum som argument innan du anropar `sim_kim`.
+
+> Gör nu 1000 simuleringar med hjälp av funktionen du just skrev. Hur många gånger lyckades Kim nå sitt mål, respektive blev pank? Antag att Kim startar med 1 krona i kapital vid varje simulering, och att vinstsannolikheten vid varje spelomgång är 0.5.
+
+
+
+Så vi har $p=0.5$, $kapital=1$ och $n=1000$ enligt uppgiften. Vi använder oss av `kim_spelar` funktionen för att simulera Kims spelande via `replicate` funktionen och genom att anropa `kim_spelar` $n$ gånger.
 
 ```{r}
 set.seed(040911)
@@ -157,13 +172,13 @@ sim_kim(0.5, 1, 1000)
 
 
 
-### Uppgift 1.3 - Simulering av Kims spelande med större startkapital
-Om Kim har 2 kronor att starta med så är det rimligt att tro att chansen att lyckas nå fram till 6 kronor är större. 
+## Simulering av Kims spelande med större startkapital
+Om Kim har 2 kronor att starta med så är det rimligt att tro att chansen att lyckas nå fram till 6 kronor är större.
 
 > Undersök genom simulering hur det går för en spelare som har 2, 3, 4 eller 5 kronor i startkapital. Gör 1000 experiment för vart och ett av dessa fyra fall också, och anteckna hur ofta spelet slutar lyckligt.
 
 
-
+Helt enkelt använder vi `sim_kim` funktionen igen men med olika startkapital.
 
 ```{r}
 sim_kim(0.5, 1, 1000)
@@ -172,7 +187,7 @@ sim_kim(0.5, 3, 1000)
 sim_kim(0.5, 4, 1000)
 sim_kim(0.5, 5, 1000)
 ```
-Vilket ger oss mycket rimliga resultat då sannolikheten ökar markant då startkapitalet är närmare kapital-målet. 
+Vilket ger oss mycket rimliga resultat då sannolikheten ökar markant då startkapitalet är närmare kapital-målet.
 
 \newpage
 
@@ -198,7 +213,7 @@ Vilket ger oss mycket rimliga resultat då sannolikheten ökar markant då start
 
 
 
-## Uppgift 2
+# Uppgift 2
 Ett annat sätt att undersöka Kims chans att lyckas är så här: Om Kims kapital efter $n$ spelomgångar är $X_n$ kronor (där $X_0$ betecknar startkapitalet) så kommer följden $X_n$ att bilda en Markovkedja. Den kommer förr eller senare att hamna i något av de båda absorberande tillstånden 0 eller 6. Låt oss beteckna dessa båda händelser med $X_{\infty}=0$ respektive $X_{\infty}=6$. Sannolikheten $\mathbb{P}\left(X_{\infty}=6\right)$ kan vi approximativt räkna ut genom att utnyttja en ekvation som säger att om $\boldsymbol{P}$ är övergångsmatrisen för en absorberande Markovkedja så gäller att
 
 $$
@@ -210,9 +225,15 @@ $$
 
 då $n \rightarrow \infty$. Här ska matrisen $\boldsymbol{P}$ vara skriven på "standardform", dvs de fem transienta tillstånden (1-5) ska komma först, och de båda rekurrenta sist. Sätt tillstånd 0 sist.
 
-### Uppgift 2.1 - Hantering av SR-matrisen
+
+
+
+
+
+## Hantering av SR-matrisen
 
 Ett av elementen i matrisen \(\boldsymbol{S}\boldsymbol{R}\) beskriver sannolikheten att absorption sker i tillstånd 6 när spelaren startar med 1 krona.
+
 > Vilket element är det?
 
 När vi undersöker absorptionssannolikheter i en Markovkedja med standardformen som har transienta tillstånd först och absorberande tillstånd sist, hittar vi dessa sannolikheter i SR-matrisen.
@@ -227,7 +248,9 @@ SR-matrisen har dimension 5x2, där 5 är antalet transienta tillstånd och 2 ä
 
 För att hitta sannolikheten att absorption sker i tillstånd 6 när spelaren startar med 1 krona, letar vi efter elementet i SR-matrisen som motsvarar övergången från transienta tillstånd 1 till absorberande tillstånd 6. Detta element finns i första raden och sista kolumnen. Dvs på plats $SR_{1,2}$.
 
-### Uppgift 2.2 - Skapa övergångsmatrisen
+
+
+## Skapa övergångsmatrisen
 Skriv en funktion kims_matris i $R$, som tar som input en vinstsannolikhet $p$ och ger som output övergångsmatrisen för denna vinstsannolikhet. Du får följande till hjälp - allt du behöver göra är att byta ut några av 0:orna mot rätt sannolikhet.
 
 ```{r}
@@ -244,19 +267,28 @@ kims_matris <- function(p) {
 }
 ```
 
-### Uppgift 2.3 - Beräkning av SR-matrisen
 
-1. **Beräkna $SR$-matrisen:**  
-   - Du ska skriva en funktion, t.ex. `hitta_SR`, som tar en övergångsmatris $P$ (skriven på standardform, där de transienta tillstånden $1$–$5$ kommer först och de absorberande tillstånden $6$ och $0$ sist) som indata.  
-   - Funktionen ska ge som output matrisen $SR$, vilken innehåller de absorberingssannolikheter som gäller för varje transient starttillstånd.  
-   - Du kan beräkna $SR$ antingen teoretiskt (då måste du förklara med ord och symboler vad de teoretiska resultaten innebär, samt var du hittat dem) eller genom att använda en numerisk metod där du bestämmer det $n$ för vilket $P^n \approx P^{n+1}$ med fyra decimalers noggrannhet. Om du väljer den senare metoden ska du redovisa för vilket $n$ detta inträffar när vinstsannolikheten är $p = 0.5$.
 
-2. **Jämförelse med simulerade resultat:**  
-   - Du ska utifrån $SR$-matrisen beräkna, för startkapitalen $1$, $2$, $3$, $4$ respektive $5$, hur många av $1000$ spel som "borde" ha slutat lyckligt (dvs. att Kim når $6$ kronor).  
-   - Därefter ska du jämföra dessa teoretiska sannolikheter med de simulerade resultaten från Uppgift 1 och utvärdera om de överensstämmer.  
-   - Som en kommentar ska du även reflektera över om det finns en enkel formel som beskriver hur chansen att nå $6$ kronor ökar med högre startkapital.
 
-#### Beräkning av SR-matrisen
+## Beräkning av SR-matrisen
+
+1. Beräkna $SR$-matrisen:
+
+    > Du ska skriva en funktion, t.ex. `hitta_SR`, som tar en övergångsmatris $P$ (skriven på standardform, där de transienta tillstånden $1$–$5$ kommer först och de absorberande tillstånden $6$ och $0$ sist) som indata.
+
+    > Funktionen ska ge som output matrisen $SR$, vilken innehåller de absorberingssannolikheter som gäller för varje transient starttillstånd.
+
+    > Du kan beräkna $SR$ antingen teoretiskt (då måste du förklara med ord och symboler vad de teoretiska resultaten innebär, samt var du hittat dem) eller genom att använda en numerisk metod där du bestämmer det $n$ för vilket $P^n \approx P^{n+1}$ med fyra decimalers noggrannhet. Om du väljer den senare metoden ska du redovisa för vilket $n$ detta inträffar när vinstsannolikheten är $p = 0.5$.
+
+2. Jämförelse med simulerade resultat:
+
+    > Du ska utifrån $SR$-matrisen beräkna, för startkapitalen $1$, $2$, $3$, $4$ respektive $5$, hur många av $1000$ spel som "borde" ha slutat lyckligt (dvs. att Kim når $6$ kronor).
+
+    > Därefter ska du jämföra dessa teoretiska sannolikheter med de simulerade resultaten från Uppgift 1 och utvärdera om de överensstämmer.
+
+    > Som en kommentar ska du även reflektera över om det finns en enkel formel som beskriver hur chansen att nå $6$ kronor ökar med högre startkapital.
+
+### Beräkning av SR-matrisen
 
 Vet att
 $$
@@ -264,17 +296,17 @@ S = (\mathbb{I}- \mathbb{P}_t)^{-1}
 $$
 
 ```{r}
-hitta_SR <- function(P) { 
+hitta_SR <- function(P) {
   # Extrahera övergångsmatrisen för de transienta tillstånden (1–5)
   P_t <- P[1:5, 1:5] # extraherar de transienta tillstånden
   I <- diag(5) # skapar en 5x5 enhetsmatris
-  
+
   # Beräkna den fundamentala matrisen S = (I - P_t)^{-1}
   S <- solve(I - P_t) # beräknar den fundamentala matrisen
 
   # Extrahera övergångarna från de transienta tillstånden till de absorberande (tillstånd 6 och 0)
-  R <- P[1:5, 6:7] # extraherar övergångarna från de transienta tillstånden till de absorberande 
-  
+  R <- P[1:5, 6:7] # extraherar övergångarna från de transienta tillstånden till de absorberande
+
   # Beräkna SR-matrisen
   SR <- S %*% R
   return(SR)
@@ -321,7 +353,7 @@ resultat_jamforelse <- data.frame(
 print(resultat_jamforelse)
 ```
 
-Så när $p=0.5$ så är det teoretiska antalet vinster 500, och detta stämmer väl med det simulerade antalet vinster. Detta är även något vi kan förvänta oss enligt Spelarens ruin som vi har gått igenom i föreläsningen. 
+Så när $p=0.5$ så är det teoretiska antalet vinster 500, och detta stämmer väl med det simulerade antalet vinster. Detta är även något vi kan förvänta oss enligt Spelarens ruin som vi har gått igenom i föreläsningen.
 
 
 
@@ -345,17 +377,19 @@ Så när $p=0.5$ så är det teoretiska antalet vinster 500, och detta stämmer 
 
 \newpage
 
-## Uppgift 3 - Sannolikheten att nå 6 kronor
+# Uppgift 3 - Sannolikheten att nå 6 kronor
 
 Frågan går ut på att:
 
-> Undersöka hur sannolikheten att, med ett startkapital på 1 krona, nå 6 kronor förändras när vinstsannolikheten ändras så att spelaren oftare förlorar (alltså när \(p\) varierar från \(20\%\) upp till \(80\%\)).
+> Undersöka hur sannolikheten att, med ett startkapital på 1 krona, nå 6 kronor förändras när vinstsannolikheten ändras så att spelaren oftare förlorar (alltså när $p$ varierar från $20\%$ upp till $80\%$).
 
 > Använda två metoder för att bestämma denna sannolikhet:
-  - **Simulering:** Kör simuleringar (som i Uppgift 1) med de olika värdena på \(p\) och uppskatta andelen gånger spelaren når 6 kronor.
-  - **Teoretisk/numerisk metod:** Använd samma metod som i Uppgift 2, d.v.s. studera konvergensen av \(P^n\) (övergångsmatrisen skriven i standardform) för att bestämma absorberingssannolikheterna, med hänsyn till att det nödvändiga \(n\) för konvergens ändras med \(p\).
 
-### Lösning via simulering 
+  - **Simulering:** Kör simuleringar (som i Uppgift 1) med de olika värdena på $p$ och uppskatta andelen gånger spelaren når 6 kronor.
+
+  - **Teoretisk/numerisk metod:** Använd samma metod som i Uppgift 2, d.v.s. studera konvergensen av $P^n$ (övergångsmatrisen skriven i standardform) för att bestämma absorberingssannolikheterna, med hänsyn till att det nödvändiga $n$ för konvergens ändras med $p$.
+
+## Lösning via simulering
 
 ```{r}
 sim_kim(0.2, 1, 1000)
@@ -367,7 +401,17 @@ sim_kim(0.7, 1, 1000)
 sim_kim(0.8, 1, 1000)
 ```
 
-### Lösning via teori/numerisk metod 
+## Lösning via teori/numerisk metod
+
+```{r}
+P <- kims_matris(0.5)
+SR <- hitta_SR(P)
+
+# Teoretiska sannolikheter för att nå 6 kronor från olika startkapital
+# Extraherar sannolikheterna för att nå 6 kronor från olika startkapital från kolumn 1 i SR-matrisen
+teoretiska_sannolikheter <- SR[, 1]
+teoretiska_sannolikheter
+```
 
 
 
@@ -393,18 +437,63 @@ sim_kim(0.8, 1, 1000)
 
 \newpage
 
-## Uppgift 4
+# Uppgift 4
 
-På Rodmans Roulette måste man inte satsa exakt 1 krona vid varje spel. Det är tillåtet att satsa ett valfritt belopp. Om man vinner får man tillbaka dubbla insatsen. Robin brukar besöka Rodmans Roulette ibland. Hen har alltid 1 krona i startkapital, men följer en djärvare strategi än Kim: inför varje spelomgång satsar hen alla pengar hen har. Dock är Robin, precis som Kim, nöjd om hen kan nå upp till 6 kronor. Om hen vid ett visst tillfälle äger 4 eller 5 kronor, satsar hen alltså endast 2 kronor respektive 1 krona. Vi ska undersöka om Robin har bättre eller sämre chans att nå fram till sexkronorsmålet än vad Kim har.
+På Rodmans Roulette måste man inte satsa exakt 1 krona vid varje spel. Det är tillåtet att satsa ett valfritt belopp. Om man vinner får man tillbaka dubbla insatsen.
 
-### Uppgift 4.1 – Robins övergångsmatris:
+- Robin brukar besöka Rodmans Roulette ibland. Hen har alltid 1 krona i startkapital, men följer en djärvare strategi än
 
-   Du ska beskriva hur Robins kapital utvecklas, vilket modelleras som en Markovkedja. Det innebär att du ska skriva en R‑funktion, t.ex. `robins_matris`, som tar in en vinstsannolikhet $p$ och returnerar övergångsmatrisen för Robins strategi. I Robins strategi satsar hen hela sitt kapital i varje spelomgång, med undantag för när hen har $4$ eller $5$ kronor – då satsas endast $2$ respektive $1$ krona, så att målet $6$ uppnås exakt.
+- Kim: inför varje spelomgång satsar hen alla pengar hen har. Dock är Robin, precis som Kim, nöjd om hen kan nå upp till 6 kronor. Om hen vid ett visst tillfälle äger 4 eller 5 kronor, satsar hen alltså endast 2 kronor respektive 1 krona.
 
-### Uppgift 4.2 – Beräkning av $SR$-matrisen och vinstchans:
-   Med hjälp av samma metod som i Uppgift 2 (där du beräknar $SR$-matrisen för en absorberande Markovkedja) ska du:  
-   - Räkna ut $SR$-matrisen för Robins övergångsmatris, givet olika värden på $p$ ($20\%$, $35\%$, $50\%$, $65\%$, $80\%$).  
-   - Avläsa från $SR$-matrisen Robins vinstchans, dvs sannolikheten att med start från $1$ krona nå målet $6$.  
-   - Avgöra för vilka värden på $p$ det är fördelaktigt att spela "djärvt" (dvs följa Robins strategi) jämfört med att spela försiktigt.
+> Vi ska undersöka om Robin har bättre eller sämre chans att nå fram till sexkronorsmålet än vad Kim har.
+
+## Robins övergångsmatris:
+
+> Du ska beskriva hur Robins kapital utvecklas, vilket modelleras som en Markovkedja. Det innebär att du ska skriva en R‑funktion, t.ex. `robins_matris`, som tar in en vinstsannolikhet $p$ och returnerar övergångsmatrisen för Robins strategi. I Robins strategi satsar hen hela sitt kapital i varje spelomgång, med undantag för när hen har $4$ eller $5$ kronor – då satsas endast $2$ respektive $1$ krona, så att målet $6$ uppnås exakt.
+
+```{r}
+# Skapa en funktion som skapar en övergångsmatris för Robins strategi
+# Funktionen tar in en vinstsannolikhet p och returnerar övergångsmatrisen för Robins strategi
+robins_matris <- function(p) {
+  # Matris med 7 rader och 7 kolumner enligt standardform:
+  # Transienta tillstånd: 1, 2, 3, 4, 5. Absorberande: 6, 0.
+  # Ordning: [1, 2, 3, 4, 5, 6, 0]
+  matrix(c(
+         0,    p,   0,    0,    0,    0,   1-p, # från kapital 1, kan hamna på 2 eller 0
+         0,    0,   0,    p,    0,    0,   1-p, # från kapital 2, kan hamna på 4 eller 0
+         0,    0,   0,    0,    0,    p,   1-p, # från kapital 3, kan hamna på 6 eller 0
+         0,  1-p,   0,    0,    0,    p,    0, # från kapital 4, kan hamna på 6 eller 2
+         0,    0,   0,  1-p,    0,    p,    0, # från kapital 5, kan hamna på 6 eller 4
+         0,    0,   0,    0,    0,    1,    0, # tillstånd 6, absorberande
+         0,    0,   0,    0,    0,    0,    1  # tillstånd 0, absorberande
+  ), nrow = 7, byrow = TRUE)
+}
+
+
+robins_matris(0.5)
+```
+
+
+
+
+
+
+
+
+
+## Beräkning av $SR$-matrisen och vinstchans:
+Med hjälp av samma metod som i Uppgift 2 (där du beräknar $SR$-matrisen för en absorberande Markovkedja) ska du:
+
+> Räkna ut $SR$-matrisen för Robins övergångsmatris, givet olika värden på $p$ ($20\%$, $35\%$, $50\%$, $65\%$, $80\%$).
+
+> Avläsa från $SR$-matrisen Robins vinstchans, dvs sannolikheten att med start från $1$ krona nå målet $6$.
+
+> Avgöra för vilka värden på $p$ det är fördelaktigt att spela "djärvt" (dvs följa Robins strategi) jämfört med att spela försiktigt.
 
 Sammanfattat: Du ska först formulera Robins strategi genom en övergångsmatris via en R‑funktion, och sedan analysera hur sannolikheten att nå $6$ (uttryckt genom $SR$-matrisen) varierar med $p$, för att avgöra när strategin är optimal.
+
+```{r}
+P <- robins_matris(0.5)
+SR <- hitta_SR(P)
+SR
+```
