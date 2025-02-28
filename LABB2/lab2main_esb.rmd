@@ -1,5 +1,5 @@
 ---
-title: "Labb 0"
+title: "Labb 2"
 author: Sebastijan Babic & Esbjörn Runesson
 date: "XXXX--XX--XX"
 output: 
@@ -9,3 +9,169 @@ output:
     theme: cerulean          
     highlight: tango         
 ---
+
+## Användbara funktioner
+```{r}
+# Denna funktion simulerar en spelomgång med vinstsannolikhet p och ett visst kapital.
+# Funktionen returnerar det nya kapitalet beroende på utfallet.
+en_spelomgang <- function(p, kapital) {
+  if (runif(1) < p) { # om vi vunnit
+    return(kapital + 1)
+  } else { # annars har vi förlorat
+    return(kapital - 1)
+  }
+}
+
+
+
+
+# Denna funktion räknar ut matrisen A upphöjt till n, enligt den iterativa
+# definitionen A^n = A %*% A %*% ... %*% A (n stycken A), med A^0 = I.
+# Exempel: mpow(A, 3) == A %*% A %*% A
+mpow <- function(A, n) {
+  resultat <- diag(nrow(A))
+  potens <- n
+  while (potens > 0) {
+    resultat <- A %*% resultat
+    potens <- potens - 1
+  }
+  return(resultat)
+}
+
+
+
+
+
+# Låt A vara en matris innehållandes sannolikheter. Denna funktion testar om
+# raderna i A är identiska upp till de d första decimalerna. Som ett exempel,
+# talet 0.12309 är lika med 0.12301 upp till den fjärde decimalen, men avrundat
+# till 4 decimaler är dessa tal ej lika.
+# Funktionen returnerar TRUE om raderna är identiska; FALSE annars.
+rows_equal <- function(A, d = 4) {
+  A_new <- trunc(A * 10^d) # förstora talet och ta heltalsdelen
+  for (k in 2:nrow(A_new)) {
+  # Kolla om alla element i rad 1 är lika med motsvarande element i rad k
+    if (!all(A_new[1, ] == A_new[k, ])) {
+    # Om något element skiljer sig så är raderna ej lika
+    return(FALSE)
+    }
+  }
+# Hamnar vi här så var alla rader lika
+  return(TRUE)
+}
+
+
+
+# Låt A och B vara matriser innehållandes sannolikheter. Denna funktion testar
+# om elementen A är identiska, upp till de d första decimalerna, med motsvarande
+# element i matrisen B.
+# Funktionen returnerar TRUE om matriserna är identiska; FALSE annars.
+matrices_equal <- function(A, B, d = 4) {
+  A_new <- trunc(A * 10^d)
+  B_new <- trunc(B * 10^d)
+  if (all(A_new == B_new)) {
+    return(TRUE)
+  } else {
+    return(FALSE)
+  }
+}
+```
+
+## Uppgift 1
+
+1)
+Funktionen en_spelomgang i avsnittet “Användbara funktioner” tar en vinstsannolikhet p och ett kapital
+kapital som input, och ger som output det nya kapitalet efter en spelomgång, enligt definitionen
+som gavs i introduktionen ovan. Denna funktion utnyttjar kommandot runif(1) som genererar en
+slumpvariabel U från en likformig fördelning på intervallet [0, 1]. Som du bör känna till vid det här
+laget så gäller det att $P(U < p) = p$ för $p ∈ [0, 1]$.
+Din uppgift är nu att skriva en funktion kim_spelar, som simulerar Kims spelande enligt definitionen
+som gavs i introduktionen. Funktionen ska ta som input en vinstsannolikhet p och ett startkapital
+kapital. Som output ska funktionen returnera en 1:a (dvs return(1)) om Kims kapital når 6 kronor
+(Kim vinner), och en 0:a (dvs return(0)) om Kims kapital når 0 kronor (Kim förlorar). Funktionen
+kim_spelar ska använda sig av funktionen en_spelomgang.
+
+```{r}
+en_spelomgang <- function(p, kapital) {
+  if (runif(1) < p) { # om vi vunnit
+    return(kapital + 1)
+  } else { # annars har vi förlorat
+    return(kapital - 1)
+  }
+}
+kim_spelar <- function(p, kapital) {
+  # Skapa en tillfällig variabel för att spåra det aktuella kapitalet
+  aktuellt_kapital <- kapital
+  
+  # Använd en repeat-loop för att simulera spelomgångar tills Kim vinner eller förlorar
+  repeat {
+    # Uppdatera kapitalet med hjälp av funktionen en_spelomgang
+    aktuellt_kapital <- en_spelomgang(p, aktuellt_kapital)
+    
+    # Om Kim når 6 kronor, returnera 1 (vinst)
+    if (aktuellt_kapital == 6) {
+      return(1)
+    }
+    
+    # Om Kim når 0 kronor, returnera 0 (förlust)
+    if (aktuellt_kapital == 0) {
+      return(0)
+    }
+  }
+}
+kim_spelar(1/2,1)
+```
+
+
+2)
+Skriv en funktion sim_kim, som gör n simuleringar av Kims spelande och räknar hur många gånger
+hen går med vinst. Funktionen ska använda sig av kim_spelar ovan, och ska som argument ta en
+vinstsannolikhet p, ett startkapital kapital, och antalet simuleringar n (default = 1000). Output ska
+vara antalet simuleringar som slutade med vinst.
+Gör nu 1000 simuleringar med hjälp av funktionen du just skrev. Hur många gånger lyckades Kim nå
+sitt mål, respektive blev pank? Antag att Kim startar med 1 krona i kapital vid varje simulering, och
+att vinstsannolikheten vid varje spelomgång är 0.5. Använd funktionen set.seed med ditt 6-siffriga
+födelsedatum som argument innan du anropar sim_kim.
+
+```{r}
+set.seed(980608)
+sim_kim <- function(p, kapital, n = 1000) {
+  # Räknare för antalet vinster
+  antal_vinster <- 0
+  
+  # Loopa genom n simuleringar
+  for (i in 1:n) {
+    # Anropa kim_spelar och uppdatera räknaren baserat på resultatet
+    if (kim_spelar(p, kapital) == 1) {
+      antal_vinster <- antal_vinster + 1
+    }
+  }
+  
+  # Returnera antalet vinster
+  return(antal_vinster)
+}
+antal_vinster <- sim_kim(p = 0.5, kapital = 1, n = 1000)
+antal_förluster <- 1000 - antal_vinster
+cat("Antal vinster:", antal_vinster, "\n")
+cat("Antal förluster:", antal_förluster, "\n")
+```
+
+3)
+
+## Uppgift 2
+
+1)
+
+2)
+
+3)
+
+## Uppgift 3
+
+
+
+## Uppgift 4
+
+1)
+
+2)
