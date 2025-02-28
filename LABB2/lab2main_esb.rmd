@@ -179,7 +179,7 @@ sim_kim <- function(p, kapital, n = 1000) {
   # Returnera antalet vinster
   return(antal_vinster)
 }
-# Vi använder sim_kim som i deluppgift 2) men simulerarnu för startkapital 2kr,3kr,4kr,5kr
+# Vi använder sim_kim som i deluppgift 2) men simulerar nu för startkapital 2kr,3kr,4kr,5kr
 antal_vinster2 <- sim_kim(p = 0.5, kapital = 2, n = 1000)
 antal_vinster3 <- sim_kim(p = 0.5, kapital = 3, n = 1000)
 antal_vinster4 <- sim_kim(p = 0.5, kapital = 4, n = 1000)
@@ -193,11 +193,128 @@ cat("Antal vinster för spelare med 5 kr i startkapital:", antal_vinster5, "\n")
 
 ## Uppgift 2
 
+Ett annat sätt att undersöka Kims chans att lyckas är så här: Om Kims kapital efter n spelomgångar är $X_{n}$
+kronor (där $X_{0}$ betecknar startkapitalet) så kommer följden $X_{n}$ att bilda en Markovkedja. Den kommer förr
+eller senare att hamna i något av de båda absorberande tillstånden 0 eller 6. Låt oss beteckna dessa båda
+händelser med $X_{\infty} = 0$ respektive $XX_{\infty} = 6$. Sannolikheten $P(X_{\infty} = 6)$ kan vi approximativt räkna ut genom
+att utnyttja en ekvation som säger att om P är övergångsmatrisen för en absorberande Markovkedja så gäller
+att $P^{n} \to$ $\begin{pmatrix}
+0 & SR\\
+0 & I
+\end{pmatrix}$ 
+då $n \to \infty$. Här ska matrisen P vara skriven på “standardform”, dvs de fem transienta tillstånden (1–5) ska
+komma först, och de båda rekurrenta sist. Sätt tillstånd 0 sist.
+
+
 1)
+Ett av elementen i matrisen SR beskriver sannolikheten att absorption sker i tillstånd 6 när spelaren
+startar med 1 krona. Vilket element är det?
+
+Kims kapital kan anta värdena $X_{n} = 0,1,2,3,4,5,6$ där 0 och 6 är absorberande tillstånd. Vi vet att övergångsmatrisen $P$ för en absorberande Markovkedja kan skrivas på följande form $\begin{pmatrix}
+P_{t} & R\\
+0 & I_{r}
+\end{pmatrix}$ 
+
+där $P_{t}$ motsvarar övergångar mellan transienta tillstånd, R motsvarar övergångar från transienta tillstånd till absorberande tillstånd och $I_{r}$ motsvarar identitetsmatrisen av dimension $r\cdot r$. Då $n \to \infty$ så går övergångsmatrisen mot $\begin{pmatrix}
+0 & SR\\
+0 & I
+\end{pmatrix}$ 
+där SR är en 5x2 matris som beskriver sannolikheten för absorption i de två absorberande tillstånden 0 och 6 från de transienta tillstånden 1,2,3,4,5. Då vi är intresserade av sannolikheten för absorption i tillstånd 6 givet startkapital 1kr så motsvarar detta $SR_{1,2}$ då tillstånd 1 är det första transienta tillståndet (rad 1 i SR) och tillstånd 6 är det andra absorberande tillståndet (kolumn 2 i SR).
 
 2)
+Skriv en funktion kims_matris i R, som tar som input en vinstsannolikhet p och ger som output
+övergångsmatrisen för denna vinstsannolikhet. Du får följande till hjälp — allt du behöver göra är att
+byta ut några av 0:orna mot rätt sannolikhet.
+
+```{r}
+kims_matris <- function(p) {
+matrix(c(
+1, 0, 0, 0, 0, 0, 0,
+1-p, 0, p, 0, 0, 0, 0,
+0, 1-p, 0, p, 0, 0, 0,
+0, 0, 1-p, 0, p, 0, 0,
+0, 0, 0, 1-p, 0, p, 0,
+0, 0, 0, 0, 1-p, 0, p,
+0, 0, 0, 0, 0, 0, 1
+), nrow = 7, byrow = TRUE)
+}
+print(kims_matris(p=0.5))
+```
+
 
 3)
+Skriv en funktion hitta_SR som tar som input en övergångsmatris P skriven på standardform och ger
+som output motsvarande matris SR. Matrisen SR kan räknas ut på teoretisk väg eller genom att
+avgöra för vilket n som Pn ≈ Pn+1 med fyra decimalers noggrannhet. Hur många av de tusen spelen i uppgift 1 “borde” ha slutat lyckligt för Kim, när startkapitalet var 1, 2, 3, 4 respektive 5 kronor? Stämmer talen i SR överens med de tal du kom fram till i uppgift 1?
+
+
+```{r}
+# Funktion för att beräkna P^n
+mpow <- function(P, n) {
+  resultat <- diag(nrow(P))
+  for (i in 1:n) {
+    resultat <- resultat %*% P
+  }
+  return(resultat)
+}
+
+# Funktion för att jämföra matriser med given decimalnoggrannhet
+matrices_equal <- function(A, B, d = 4) {
+  A_new <- trunc(A * 10^d)
+  B_new <- trunc(B * 10^d)
+  return(all(A_new == B_new))
+}
+
+# Funktion för att hitta SR-matrisen
+hitta_SR <- function(P) { 
+  # Extrahera övergångsmatrisen för de transienta tillstånden (1–5)
+  P_t <- P[2:6, 2:6] # extraherar de transienta tillstånden (1–5)
+  I <- diag(5) # skapar en 5x5 enhetsmatris
+  
+  # Beräkna den fundamentala matrisen S = (I - P_t)^{-1}
+  S <- solve(I - P_t) # beräknar den fundamentala matrisen
+
+  # Extrahera övergångarna från de transienta tillstånden till de absorberande (tillstånd 6 och 0)
+  R <- P[2:6, c(1, 7)] # extraherar övergångarna från de transienta tillstånden till de absorberande 
+  
+  # Beräkna SR-matrisen
+  SR <- S %*% R
+  return(SR)
+}
+
+# Kör funktionen och skriv ut resultatet
+P <- kims_matris(0.5)
+SR <- hitta_SR(P)
+print(SR)
+
+# Teoretiska sannolikheter för att nå 6 kronor från olika startkapital
+teoretiska_sannolikheter <- SR[, 2]  # Kolumn 2 är sannolikheten att nå tillstånd 6
+print(teoretiska_sannolikheter)
+
+# Förväntat antal vinster av 1000 spel
+forvantat_antal <- teoretiska_sannolikheter * 1000
+print(forvantat_antal)
+
+# Jämförelse med simulerade resultat från uppgift 1.3
+simulerade_resultat <- c(
+  sim_kim(0.5, 1, 1000),
+  sim_kim(0.5, 2, 1000),
+  sim_kim(0.5, 3, 1000),
+  sim_kim(0.5, 4, 1000),
+  sim_kim(0.5, 5, 1000)
+)
+
+# Jämförelsetabell
+resultat_jamforelse <- data.frame(
+  Startkapital = 1:5,
+  Teoretisk_sannolikhet = teoretiska_sannolikheter,
+  Teoretiska_vinster = forvantat_antal,
+  Simulerade_vinster = simulerade_resultat
+)
+
+print(resultat_jamforelse)
+```
+
 
 ## Uppgift 3
 
