@@ -157,6 +157,39 @@ cat("Antal förluster:", antal_förluster, "\n")
 ```
 
 3)
+Om Kim har 2 kronor att starta med så är det rimligt att tro att chansen att lyckas nå fram till 6
+kronor är större. Undersök genom simulering hur det går för en spelare som har 2, 3, 4 eller 5 kronor i
+startkapital. Gör 1000 experiment för vart och ett av dessa fyra fall också, och anteckna hur ofta spelet
+slutar lyckligt.
+
+```{r}
+# set.seed(980608)
+sim_kim <- function(p, kapital, n = 1000) {
+  # Räknare för antalet vinster
+  antal_vinster <- 0
+  
+  # Loopa genom n simuleringar
+  for (i in 1:n) {
+    # Anropa kim_spelar och uppdatera räknaren baserat på resultatet
+    if (kim_spelar(p, kapital) == 1) {
+      antal_vinster <- antal_vinster + 1
+    }
+  }
+  
+  # Returnera antalet vinster
+  return(antal_vinster)
+}
+# Vi använder sim_kim som i deluppgift 2) men simulerarnu för startkapital 2kr,3kr,4kr,5kr
+antal_vinster2 <- sim_kim(p = 0.5, kapital = 2, n = 1000)
+antal_vinster3 <- sim_kim(p = 0.5, kapital = 3, n = 1000)
+antal_vinster4 <- sim_kim(p = 0.5, kapital = 4, n = 1000)
+antal_vinster5 <- sim_kim(p = 0.5, kapital = 5, n = 1000)
+cat("Antal vinster för spelare med 2 kr i startkapital:", antal_vinster2, "\n")
+cat("Antal vinster för spelare med 3 kr i startkapital:", antal_vinster3, "\n")
+cat("Antal vinster för spelare med 4 kr i startkapital:", antal_vinster4, "\n")
+cat("Antal vinster för spelare med 5 kr i startkapital:", antal_vinster5, "\n")
+```
+
 
 ## Uppgift 2
 
