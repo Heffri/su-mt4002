@@ -249,22 +249,6 @@ avgöra för vilket n som Pn ≈ Pn+1 med fyra decimalers noggrannhet. Hur mång
 
 
 ```{r}
-# Funktion för att beräkna P^n
-mpow <- function(P, n) {
-  resultat <- diag(nrow(P))
-  for (i in 1:n) {
-    resultat <- resultat %*% P
-  }
-  return(resultat)
-}
-
-# Funktion för att jämföra matriser med given decimalnoggrannhet
-matrices_equal <- function(A, B, d = 4) {
-  A_new <- trunc(A * 10^d)
-  B_new <- trunc(B * 10^d)
-  return(all(A_new == B_new))
-}
-
 # Funktion för att hitta SR-matrisen
 hitta_SR <- function(P) { 
   # Extrahera övergångsmatrisen för de transienta tillstånden (1–5)
@@ -318,10 +302,108 @@ print(resultat_jamforelse)
 
 ## Uppgift 3
 
+De flesta kasinon drivs inte ideellt, utan spelarna förlorar pengar i det långa loppet. Vi ska nu undersöka hur
+chansen att nå sexkronorsnivån ändras när sannolikheten att förlora ett spel är större än chansen att vinna.
+Ett sådant spel kan beskrivas med en Markovkedja med en likadan övergångsmatris som i uppgift två, med
+skillnaden att p inte är 50%. Undersök chansen att nå från 1 krona till 6 kronor då p = 20%, 35%, 50%, 65%
+och 80%.
+
+Vi använder först simulering som i uppgift 1 för att undersöka chansen att nå 6 kr med startkapital 1 kr och sannolikhet $p=$20%,35%,50%,65%,80% där $n=1000$. 
+
+```{r}
+antal_vinster20 <- sim_kim(p = 0.2, kapital = 1, n = 1000)
+antal_vinster35 <- sim_kim(p = 0.35, kapital = 1, n = 1000)
+antal_vinster50 <- sim_kim(p = 0.5, kapital = 1, n = 1000)
+antal_vinster65 <- sim_kim(p = 0.65, kapital = 1, n = 1000)
+antal_vinster80 <- sim_kim(p = 0.8, kapital = 1, n = 1000)
+antal_förluster20 <- 1000 - antal_vinster20
+antal_förluster35 <- 1000 - antal_vinster35
+antal_förluster50 <- 1000 - antal_vinster50
+antal_förluster65 <- 1000 - antal_vinster65
+antal_förluster80 <- 1000 - antal_vinster80
+cat("Antal vinster för spelare med p = 20%:", antal_vinster20, "Antalet förluster:", antal_förluster20, "\n")
+cat("Antal vinster för spelare med p = 35%:", antal_vinster35, "Antalet förluster:", antal_förluster35, "\n")
+cat("Antal vinster för spelare med p = 50%:", antal_vinster50, "Antalet förluster:", antal_förluster50, "\n")
+cat("Antal vinster för spelare med p = 65%:", antal_vinster65, "Antalet förluster:", antal_förluster65, "\n")
+cat("Antal vinster för spelare med p = 80%:", antal_vinster80, "Antalet förluster:", antal_förluster80, "\n")
+```
+
+Vi använder nu samma metod som i uppgift 2 för att undersöka chansen att nå 6 kr med startkapital 1 kr och sannolikhet $p=$20%,35%,50%,65%,80%.
+
+```{r}
+P20 <- kims_matris(0.2)
+P35 <- kims_matris(0.35)
+P50 <- kims_matris(0.5)
+P65 <- kims_matris(0.65)
+P80 <- kims_matris(0.8)
+SR20 <- hitta_SR(P20)
+SR35 <- hitta_SR(P35)
+SR50 <- hitta_SR(P50)
+SR65 <- hitta_SR(P65)
+SR80 <- hitta_SR(P80)
+cat("Teoretisk sannolikhet att nå vinst med p = 0.2:", round(SR20[1,2] * 100, 2),"%\n")
+cat("Teoretisk sannolikhet att nå vinst med p = 0.35:", round(SR35[1,2] * 100, 2),"%\n")
+cat("Teoretisk sannolikhet att nå vinst med p = 0.5:", round(SR50[1,2] * 100, 2),"%\n")
+cat("Teoretisk sannolikhet att nå vinst med p = 0.65:", round(SR65[1,2] * 100, 2),"%\n")
+cat("Teoretisk sannolikhet att nå vinst med p = 0.8:", round(SR80[1,2] * 100, 2),"%\n")
+```
 
 
 ## Uppgift 4
 
+På Rodmans Roulette måste man inte satsa exakt 1 krona vid varje spel. Det är tillåtet att satsa ett valfritt
+belopp. Om man vinner får man tillbaka dubbla insatsen. Robin brukar besöka Rodmans Roulette ibland.
+Hen har alltid 1 krona i startkapital, men följer en djärvare strategi än Kim: inför varje spelomgång satsar
+hen alla pengar hen har. Dock är Robin, precis som Kim, nöjd om hen kan nå upp till 6 kronor. Om hen vid
+ett visst tillfälle äger 4 eller 5 kronor, satsar hen alltså endast 2 kronor respektive 1 krona. Vi ska undersöka
+om Robin har bättre eller sämre chans att nå fram till sexkronorsmålet än vad Kim har.
+
 1)
+Robins kapital utvecklas med tiden på ett sätt som beskrivs av en Markovkedja. Beskriv kedjans
+övergångsmatris om vinstsannolikheten är p, genom att skriva en R-funktion robins_matris som ger
+denna övergångsmatris som output, givet input p.
+
+Vi gör här på liknande sätt som i 2.2 men övergångsmatrisen ser lite annorlunda ut. Tillstånd 0 och 6 är fortfarande absorberande så raderna 0 och 6 är likadana, men för tillstånd 2 så leder vinst till 4 kr och förlust till 0 kr vilket ger att $P_{3,1} = 1-p$ och $P_{3,5} = p$. För tillstånd 3 så leder vinst till 6 kr och förlust till 0kr vilket ger att $P_{4,1} = 1-p$ och $P_{4,7} = p$. För tillstånd 4 så leder vinst till 6 kr och förlust till 2 kr vilket ger att $P_{5,3} = 1-p$ och $P_{5,7} = p$. Tillstånd 5 är lika eftersom Robin satsar 1 kr som i fallet med Kim.
+
+```{r}
+robins_matris <- function(p) {
+  matrix(c(
+    1, 0, 0, 0, 0, 0, 0,          # Tillstånd 0 (absorberande)
+    1-p, 0, p, 0, 0, 0, 0,         # Tillstånd 1
+    1-p, 0, 0, 0, p, 0, 0,         # Tillstånd 2
+    1-p, 0, 0, 0, 0, 0, p,         # Tillstånd 3
+    0, 0, 1-p, 0, 0, 0, p,         # Tillstånd 4
+    0, 0, 0, 0, 1-p, 0, p,         # Tillstånd 5
+    0, 0, 0, 0, 0, 0, 1            # Tillstånd 6 (absorberande)
+  ), nrow = 7, byrow = TRUE)
+}
+print(kims_matris(p=0.5))
+```
+
 
 2)
+Räkna ut matrisen SR för Robins övergångsmatris och avläs Robins vinstchans, då
+p = 20%, 35%, 50%, 65% och 80%. För vilka värden på p bör man spela djärvt respektive försiktigt?
+
+Vi hittar matrisen SR på samma sätt som i uppgift 2 men i det här fallet med Robins övergångsmatris i stället. Vi beräknar sedan de teoretiska sannolikheterna för vinst givet de olika värdena på p.
+
+```{r}
+
+P20 <- robins_matris(0.2)
+P35 <- robins_matris(0.35)
+P50 <- robins_matris(0.5)
+P65 <- robins_matris(0.65)
+P80 <- robins_matris(0.8)
+SR20 <- hitta_SR(P20)
+SR35 <- hitta_SR(P35)
+SR50 <- hitta_SR(P50)
+SR65 <- hitta_SR(P65)
+SR80 <- hitta_SR(P80)
+cat("Teoretisk sannolikhet att nå vinst med p = 0.2:", round(SR20[1,2] * 100, 2),"%\n")
+cat("Teoretisk sannolikhet att nå vinst med p = 0.35:", round(SR35[1,2] * 100, 2),"%\n")
+cat("Teoretisk sannolikhet att nå vinst med p = 0.5:", round(SR50[1,2] * 100, 2),"%\n")
+cat("Teoretisk sannolikhet att nå vinst med p = 0.65:", round(SR65[1,2] * 100, 2),"%\n")
+cat("Teoretisk sannolikhet att nå vinst med p = 0.8:", round(SR80[1,2] * 100, 2),"%\n")
+```
+
+Man bör därför spela försiktigt för följande p-värden: 0.2,0.35,0.5,0.65 och spela djärvt för p-värde 0.8.
