@@ -16,9 +16,6 @@ output:
 knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
 ```
 
-
-
-
 \newpage
 
 ```{r}
@@ -246,7 +243,7 @@ I vårt fall:
 
 SR-matrisen har dimension 5x2, där 5 är antalet transienta tillstånd och 2 är antalet absorberande tillstånd.
 
-För att hitta sannolikheten att absorption sker i tillstånd 6 när spelaren startar med 1 krona, letar vi efter elementet i SR-matrisen som motsvarar övergången från transienta tillstånd 1 till absorberande tillstånd 6. Detta element finns i första raden och sista kolumnen. Dvs på plats $SR_{1,2}$.
+För att hitta sannolikheten att absorption sker i tillstånd 6 när spelaren startar med 1 krona, letar vi efter elementet i SR-matrisen som motsvarar övergången från transienta tillstånd 1 till absorberande tillstånd 6. Detta element finns i första raden och första kolumnen. Dvs på plats $SR_{1,1}$.
 
 
 
@@ -256,7 +253,7 @@ Skriv en funktion kims_matris i $R$, som tar som input en vinstsannolikhet $p$ o
 ```{r}
 kims_matris <- function(p) {
   matrix(c(
-    0, p, 0, 0, 0, 0, 0,
+    0, p, 0, 0, 0, 0, 1-p,
     1-p, 0, p, 0, 0, 0, 0,
     0, 1-p, 0, p, 0, 0, 0,
     0, 0, 1-p, 0, p, 0, 0,
@@ -350,7 +347,7 @@ resultat_jamforelse <- data.frame(
   Simulerade_vinster = simulerade_resultat
 )
 
-print(resultat_jamforelse)
+resultat_jamforelse
 ```
 
 Så när $p=0.5$ så är det teoretiska antalet vinster 500, och detta stämmer väl med det simulerade antalet vinster. Detta är även något vi kan förvänta oss enligt Spelarens ruin som vi har gått igenom i föreläsningen.
@@ -393,24 +390,41 @@ Frågan går ut på att:
 
 ```{r}
 sim_kim(0.2, 1, 1000)
-sim_kim(0.3, 1, 1000)
-sim_kim(0.4, 1, 1000)
+sim_kim(0.35, 1, 1000)
 sim_kim(0.5, 1, 1000)
-sim_kim(0.6, 1, 1000)
-sim_kim(0.7, 1, 1000)
+sim_kim(0.65, 1, 1000)
 sim_kim(0.8, 1, 1000)
 ```
 
 ## Lösning via teori/numerisk metod
 
 ```{r}
-P <- kims_matris(0.5)
-SR <- hitta_SR(P)
+P_0.2 <- kims_matris(0.2)
+SR_0.2 <- hitta_SR(P_0.2)
 
 # Teoretiska sannolikheter för att nå 6 kronor från olika startkapital
 # Extraherar sannolikheterna för att nå 6 kronor från olika startkapital från kolumn 1 i SR-matrisen
 teoretiska_sannolikheter <- SR[, 1]
 teoretiska_sannolikheter
+
+
+# Gör samma för andra värden på p
+P_0.35 <- kims_matris(0.35)
+SR_0.35 <- hitta_SR(P_0.35)
+
+P_0.5 <- kims_matris(0.5)
+SR_0.5 <- hitta_SR(P_0.5)
+
+P_0.65 <- kims_matris(0.65)
+SR_0.65 <- hitta_SR(P_0.65)
+
+P_0.8 <- kims_matris(0.8)
+SR_0.8 <- hitta_SR(P_0.8)
+
+data.frame(
+  p = c(0.2, 0.35, 0.5, 0.65, 0.8),
+  teoretisk_sannolikhet = c(SR_0.2[1, 1], SR_0.35[1, 1], SR_0.5[1, 1], SR_0.65[1, 1], SR_0.8[1, 1])
+)
 ```
 
 
@@ -493,7 +507,46 @@ Med hjälp av samma metod som i Uppgift 2 (där du beräknar $SR$-matrisen för 
 Sammanfattat: Du ska först formulera Robins strategi genom en övergångsmatris via en R‑funktion, och sedan analysera hur sannolikheten att nå $6$ (uttryckt genom $SR$-matrisen) varierar med $p$, för att avgöra när strategin är optimal.
 
 ```{r}
-P <- robins_matris(0.5)
-SR <- hitta_SR(P)
-SR
+P_20 <- robins_matris(0.2)
+P_35 <- robins_matris(0.35)
+P_50 <- robins_matris(0.5)
+P_65 <- robins_matris(0.65)
+P_80 <- robins_matris(0.8)
+
+SR_20 <- hitta_SR(P_20)
+SR_35 <- hitta_SR(P_35)
+SR_50 <- hitta_SR(P_50)
+SR_65 <- hitta_SR(P_65)
+SR_80 <- hitta_SR(P_80)
+
+SR_20
+SR_35
+SR_50
+SR_65
+SR_80
 ```
+
+Läser av nu sannolikheten att nå 6 kronor från 1 krona för varje värde på $p$:
+
+```{r}
+SR_20[1, 1]
+SR_35[1, 1]
+SR_50[1, 1]
+SR_65[1, 1]
+SR_80[1, 1]
+```
+
+För att avgöra när strategin är optimal, jämför vi sannolikheterna för att nå 6 kronor från 1 krona för varje värde på $p$:
+
+```{r}
+p_values <- c(0.2, 0.35, 0.5, 0.65, 0.8)
+probabilities <- c(SR_20[1, 1], SR_35[1, 1], SR_50[1, 1], SR_65[1, 1], SR_80[1, 1])
+
+data.frame(p = p_values, probability = probabilities)
+```
+
+Djärvt att spela med $p=0.8$ eftersom sannolikheten att nå 6 kronor är 0.8. 
+
+
+
+
