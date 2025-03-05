@@ -9,12 +9,11 @@ output:
     number_sections: true
     fig_caption: true
     highlight: tango
+    latex_engine: xelatex
 ---
 
 \newpage
 
-
-# Användbara funktioner
 ```{r}
 # Denna funktion utgör ett skal för en födelse-dödsprocess med intensiteter
 # lambda och mu.
@@ -27,7 +26,8 @@ bd_process <- function(lambda, mu, initial_state = 0, steps = 100) {
     state <- initial_state
     for (i in 1:steps) {
 
-        # Om tillståndet är 3 så är lambda 0
+        # Om tillståndet är 3 så är lambda 0, intensiteten för födelse
+        # om redan i 3, kan ej födelse ske
         if (state_now == 3) {
             lambda_now <- 0
         } else {
@@ -36,7 +36,8 @@ bd_process <- function(lambda, mu, initial_state = 0, steps = 100) {
 
 
 
-        # Om tillståndet är 0 så är mu 0
+        # Om tillståndet är 0 så är mu 0, intensiteten för dödsfall
+        # om redan i 0, kan ej dödsfall ske
         if (state_now == 0) {
             mu_now <- 0
         } else {
@@ -49,8 +50,9 @@ bd_process <- function(lambda, mu, initial_state = 0, steps = 100) {
 
 
 
-        # Om tillståndet är 0 så minskar det med 1, annars så ökar det med 1
-        if (state_now == 0) {
+        # Om det slumpmässiga talet är mindre än lambda_now / (lambda_now + mu_now) så minskar tillståndet med 1, annars så ökar det med 1
+        # det vill säga det sker ett födelse eller dödsfall
+        if (runif(1) < lambda_now / (lambda_now + mu_now)) {
             state_now <- state_now - 1
         } else {
             state_now <- state_now + 1
@@ -99,13 +101,13 @@ Om vi ska basera svaret på förslag 1 så innebär det att det kommer 1 jobb pe
 
 \newpage
 
-# Uppgift 2 --- Se över
+# Uppgift 2
 > Rita upp $X(t)$ som funktion av $t$, d.v.s. en kurva som rör sig språngvis mellan de fyra värdena $0,1,2$ och 3. För att göra detta ska ni skapa en vektor `time`, som innehäller tidpunkterna för sprången, och en vektor `state`, där motsvarande element anger vilket tillstånd språnget leder till. Vi låter vektorn `state` börja med en nolla, eftersom det är initialtillståndet, och vektorn `time` har en nolla som första element eftersom vi börjar tidsräkningen därifrån.
 
 När ni sedan har fyllt i funktionen korrekt kan ni enkelt kalla den med värden på lambda ( $\lambda$ ) och mu ( $\mu$ ) enligt de tre förslagen som gavs ovan. Exempel:
 
 
-```{r}
+```{r, fig.height = 11, fig.width = 8, fig.cap = "Simulerad födelse-dödsprocess för dem tre olika förslag"}
 # Sätt slumptalsfröet för reproducerbarhet
 set.seed(040911)
 forslag1 <- bd_process(lambda = 1, mu = 5)
@@ -115,16 +117,38 @@ forslag1 <- bd_process(lambda = 1, mu = 5)
 time1 <- forslag1$time
 state1 <- forslag1$state
 
-# Skapa en trappstegsplot av processen
-plot(stepfun(time1[-1], state1),
-     do.points = FALSE,         # Visa inte punkter
-     xlab = "Tid (timmar)",     # X-axeletikett
-     ylab = "Antal jobb",       # Y-axeletikett
-     main = "Förgreningsprocess med lambda=1, mu=5", # Titel
-     yaxt = "n")                # Inaktivera standard y-axel
+forslag2 <- bd_process(lambda = 2, mu = 5)
+time2 <- forslag2$time
+state2 <- forslag2$state
 
-# Lägg till anpassad y-axel med heltal
-axis(2, at = c(0:3), las = 2)   # Horisontella etiketter
+
+forslag3 <- bd_process(lambda = 5, mu = 5)
+time3 <- forslag3$time
+state3 <- forslag3$state
+
+
+# Kombinera alla tre förslagen i en plot med tre subplots och reserverar en hel sida för dessa plottar när man knittar
+# las = 2 betyder att y-axelns etiketter är horisontella
+par(mfrow = c(3, 1))
+
+plot(stepfun(time1[-1], state1), do.points = FALSE,
+     xlab = "Tid", ylab = "Tillstånd", 
+     main = "Förslag 1, lambda = 1, mu = 5",
+     yaxt = "n")
+axis(2, at = c(0, 1, 2, 3), las = 2)
+
+plot(stepfun(time2[-1], state2), do.points = FALSE,
+     xlab = "Tid", ylab = "Tillstånd", 
+     main = "Förslag 2, lambda = 2, mu = 5",
+     yaxt = "n")
+axis(2, at = c(0, 1, 2, 3), las = 2)
+
+plot(stepfun(time3[-1], state3), do.points = FALSE,
+     xlab = "Tid", ylab = "Tillstånd", 
+     main = "Förslag 3, lambda = 5, mu = 5",
+     yaxt = "n")
+axis(2, at = c(0, 1, 2, 3), las = 2)
+
 ```
 
 
@@ -139,7 +163,6 @@ axis(2, at = c(0:3), las = 2)   # Horisontella etiketter
 
 # Uppgift 3
 > Räkna ut hur lảng tid det tog innan systemet hade ändrat tillstånd 500 gånger, för alla tre förslag. För att göra detta behöver du kalla funktionen på nytt för de tre förslagen, med ett nytt värde på steps (vilket?). Jämför tiderna mellan de tre förslagen och reflektera över varför de skiljer sig åt (eller inte).
-
 
 
 
