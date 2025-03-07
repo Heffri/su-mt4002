@@ -78,8 +78,6 @@ bd_process <- function(lambda, mu, initial_state = 0, steps = 100) {
 }
 
 # Exempel på användning för förslag 1 (lambda = 1, mu = 5)
-result <- bd_process(lambda = 1, mu = 5, initial_state = 0, steps = 100)
-print(result)
 
 forslag1 <- bd_process(lambda = 1, mu = 5)
 forslag2 <- bd_process(lambda = 2, mu = 5)
@@ -115,8 +113,29 @@ axis(2, at = c(0, 1, 2, 3), las = 2)
 
 
 ## Uppgift 3
+Räkna ut hur lång tid det tog innan systemet hade ändrat tillstånd 500 gånger, för alla tre förslag. För att
+göra detta behöver du kalla funktionen på nytt för de tre förslagen, med ett nytt värde på steps (vilket?).
+Jämför tiderna mellan de tre förslagen och reflektera över varför de skiljer sig åt (eller inte).
 
+```{r}
+set.seed(980608)
+calculate_time_for_500_steps <- function(lambda, mu) {
+  result <- bd_process(lambda, mu, steps = 500)
+  total_time <- result$time[length(result$time)]  # Sista värdet i time-vektorn
+  return(total_time)
+}
 
+# Beräkna tiderna för de tre förslagen
+time_proposal_1 <- calculate_time_for_500_steps(lambda = 1, mu = 5)
+time_proposal_2 <- calculate_time_for_500_steps(lambda = 2, mu = 5)
+time_proposal_3 <- calculate_time_for_500_steps(lambda = 5, mu = 5)
+
+cat("Tid för 500 tillståndsbyten (förslag 1):", time_proposal_1, "timmar\n")
+cat("Tid för 500 tillståndsbyten (förslag 2):", time_proposal_2, "timmar\n")
+cat("Tid för 500 tillståndsbyten (förslag 3):", time_proposal_3, "timmar\n")
+```
+
+Vi kan här se att det tog ca 229.6 timmar att ändra tillstånd 500 gånger för förslag 1, ca 125.5 timmar för förslag 2 och ca 65.7 timmar för förslag 3. Anledningen till att de skiljer sig åt, att tiden minskar då vi ökar värdet på $\lambda$, är att då värdet på $\lambda$ stiger ökar antalet jobb som ankommer per timme. Systemet slutför i genomsnitt 5 jobb på $0.2$ timmar och desto fler jobb som ankommer per timme desto snabbare ändrar systemet tillstånd vilket leder till att det tar kortare tid att ändra tillstånd 500 gånger. 
 
 ## Uppgift 4
 
