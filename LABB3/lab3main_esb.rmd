@@ -1,5 +1,5 @@
 ---
-title: "Labb 0"
+title: "Labb 3"
 author: Sebastijan Babic & Esbjörn Runesson
 date: "XXXX--XX--XX"
 output: 
@@ -9,3 +9,119 @@ output:
     theme: cerulean          
     highlight: tango         
 ---
+
+## Uppgift 1
+Reflektera över systemet som definierar födelse-dödsprocessen. Skriv ned vad fördelningen för tiden till nästa
+tillståndsbyte är och vad sannolikheten att processen går upp eller ned ett steg är, beroende på processens
+rådande tillstånd. När ni gjort detta för generella λ och µ, gör det specifikt för förslag 1 också.
+
+Fördelningen för tiden till nästa tillståndsbyte är $Exp(\lambda+\mu)$ och sannolikheterna är för tillstånd 0: $\lambda_{0}=1,\mu_{0}=0$, 1: $\lambda_{1}=\frac{\lambda}{\lambda+\mu},\mu_{1}=\frac{\mu}{\lambda+\mu}$, 2: $\lambda_{2}=\frac{\lambda}{\lambda+\mu},\mu_{2}=\frac{\mu}{\lambda+\mu}$ och för 3: $\lambda_{3}=0,\mu_{3}=1$ För förslag 1 har vi att tiden till nästa tillståndsbyte är $Exp(6)$ och sannolikheterna för tillstånd 0: $\lambda_{0}=1,\mu_{0}=0$, 1: $\lambda_{1}=\frac{1}{6},\mu_{1}=\frac{5}{6}$, 2: $\lambda_{2}=\frac{1}{6},\mu_{2}=\frac{5}{6}$ och för 3: $\lambda_{3}=0,\mu_{3}=1$
+
+## Uppgift 2
+Rita upp X(t) som funktion av t, d.v.s. en kurva som rör sig språngvis mellan de fyra värdena 0, 1, 2 och
+3. För att göra detta ska ni skapa en vektor time, som innehåller tidpunkterna för sprången, och en vektor
+state, där motsvarande element anger vilket tillstånd språnget leder till. Vi låter vektorn state börja med
+en nolla, eftersom det är initialtillståndet, och vektorn time har en nolla som första element eftersom vi
+börjar tidsräkningen därifrån
+
+```{r}
+set.seed(980608)
+bd_process <- function(lambda, mu, initial_state = 0, steps = 100) {
+  time_now <- 0
+  state_now <- initial_state
+  
+  # Dessa vektorer ska byggas på i loopen nedan
+  time <- 0
+  state <- initial_state
+  
+  for (i in 1:steps) {
+    # Bestäm lambda och mu baserat på aktuellt tillstånd
+    if (state_now == 3) {
+      lambda_now <- 0  # Inga fler ankomster när systemet är fullt
+    } else {
+      lambda_now <- lambda
+    }
+    
+    if (state_now == 0) {
+      mu_now <- 0  # Inga avslut när systemet är tomt
+    } else {
+      mu_now <- mu
+    }
+    
+    # Tiden till nästa tillståndsbyte är exponentialfördelad med parameter lambda_now + mu_now
+    time_to_transition <- rexp(1, rate = lambda_now + mu_now)
+    
+    # Bestäm om nästa tillstånd är upp eller ner
+    if (lambda_now == 0) {
+      # Om lambda_now är 0, måste vi gå ner
+      state_now <- state_now - 1
+    } else if (mu_now == 0) {
+      # Om mu_now är 0, måste vi gå upp
+      state_now <- state_now + 1
+    } else {
+      # Annars, slumpa om vi går upp eller ner
+      if (runif(1) < lambda_now / (lambda_now + mu_now)) {
+        state_now <- state_now + 1
+      } else {
+        state_now <- state_now - 1
+      }
+    }
+    
+    # Uppdatera tiden och lägg till i vektorerna
+    time_now <- time_now + time_to_transition
+    time <- c(time, time_now)
+    state <- c(state, state_now)
+  }
+  
+  # Returnera en lista med de två vektorerna tid och state
+  list(time = time, state = state)
+}
+
+# Exempel på användning för förslag 1 (lambda = 1, mu = 5)
+result <- bd_process(lambda = 1, mu = 5, initial_state = 0, steps = 100)
+print(result)
+
+forslag1 <- bd_process(lambda = 1, mu = 5)
+forslag2 <- bd_process(lambda = 2, mu = 5)
+forslag3 <- bd_process(lambda = 5, mu = 5)
+time1 <- forslag1$time
+state1 <- forslag1$state
+time2 <- forslag2$time
+state2 <- forslag2$state
+time3 <- forslag3$time
+state3 <- forslag3$state
+plot(stepfun(time1[-1], state1),
+do.points = FALSE,
+xlab = "Tid",
+ylab = "Tillstånd",
+main = "",
+yaxt = "n")
+axis(2, at = c(0, 1, 2, 3), las = 2)
+plot(stepfun(time2[-1], state2),
+do.points = FALSE,
+xlab = "Tid",
+ylab = "Tillstånd",
+main = "",
+yaxt = "n")
+axis(2, at = c(0, 1, 2, 3), las = 2)
+plot(stepfun(time3[-1], state3),
+do.points = FALSE,
+xlab = "Tid",
+ylab = "Tillstånd",
+main = "",
+yaxt = "n")
+axis(2, at = c(0, 1, 2, 3), las = 2)
+```
+
+
+## Uppgift 3
+
+
+
+## Uppgift 4
+
+1)
+
+2)
+
+## Uppgift 5
