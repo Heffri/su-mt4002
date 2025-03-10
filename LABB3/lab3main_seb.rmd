@@ -3,18 +3,30 @@ title: "Labb 3 - Förgreningsprocesser"
 author: "Sebastijan Babic & Esbjörn Runesson"
 date: "`r format(Sys.Date(), '%Y-%m-%d')`"
 output:
+  html_document:
+    toc: true
+    toc_float: true
+    toc_depth: 3
+    number_sections: true
+    theme: flatly
+    highlight: tango
+    code_folding: show
+    df_print: paged
   pdf_document:
     toc: true
-    toc_depth: 2
+    toc_depth: 3
     number_sections: true
-    fig_caption: true
-    highlight: tango
     latex_engine: xelatex
 geometry: margin=1in
 ---
 
+# Laboration 3 - MM4002
+
+I denna laboration har vi studerat förgreningsprocesser. Vi har skapat en födelse-dödsprocess med intensiteter $\lambda$ och $\mu$ för födelse och dödsfall och undersökt hur processen beter sig för olika värden på $\lambda$ och $\mu$. Vi har även beräknat tiden det tar för systemet att ändra tillstånd 500 gånger, andelen tid som spenderas i varje tillstånd och den stationära fördelningen för varje förslag teoretiskt och genom simuleringar. Detta är till för att avgöra vilket av förslagen som institutet bör välja för att garantera att systemet är effektivt och inte överbelastat.
+
 \newpage
 
+## Givna funktioner
 ```{r}
 # Denna funktion utgör ett skal för en födelse-dödsprocess med intensiteter
 # lambda och mu.
@@ -46,13 +58,15 @@ bd_process <- function(lambda, mu, initial_state = 0, steps = 100) {
         }
 
 
-
-        time_to_transition <- rexp(1, lambda_now + mu_now) # ty tiden till nästa tillståndsbyte är exponentialfördelad med parametern lambda_now + mu_now
+        # ty tiden till nästa tillståndsbyte är exponentialfördelad med parametern 
+        time_to_transition <- rexp(1, lambda_now + mu_now) 
+         lambda_now + mu_now
 
 
 
         # i en födelsedods-process har vi ett tal mellan 0-1 som vi generare slumpmässigt, se runif(1)
-        # om det talet är mindre än lambda_now / (lambda_now + mu_now) så sker en födelse, annars en dödsfall enligt definitionen av födelsedödsprocessen
+        # om det talet är mindre än lambda_now / (lambda_now + mu_now) så sker en 
+        # födelse, annars en dödsfall enligt definitionen av födelsedödsprocessen
         if (runif(1) < lambda_now / (lambda_now + mu_now)) {
             state_now <- state_now + 1
         } else {
@@ -70,7 +84,7 @@ bd_process <- function(lambda, mu, initial_state = 0, steps = 100) {
 ```
 
 \newpage
-# Förklaring av förgreningsprocessen
+## Förklaring av förgreningsprocessen
 
 
 Förslag på dem som ska ha tillträde till superdatorn:
@@ -161,7 +175,8 @@ Därmed får vi:
 
 \newpage
 
-# Plot av processen som funktion av tiden
+## Plot av processen som funktion av tiden
+
 > Rita upp $X(t)$ som funktion av $t$, d.v.s. en kurva som rör sig språngvis mellan de fyra värdena $0,1,2$ och 3. För att göra detta ska ni skapa en vektor `time`, som innehäller tidpunkterna för sprången, och en vektor `state`, där motsvarande element anger vilket tillstånd språnget leder till. 
 
 Vi låter vektorn `state` börja med en nolla, eftersom det är initialtillståndet, och vektorn `time` har en nolla som första element eftersom vi börjar tidsräkningen därifrån.
@@ -186,7 +201,8 @@ time3 <- forslag3$time
 state3 <- forslag3$state
 
 
-# Kombinera alla tre förslagen i en plot med tre subplots och reserverar en hel sida för dessa plottar när man knittar
+# Kombinera alla tre förslagen i en plot med tre subplots och reserverar 
+# en hel sida för dessa plottar när man knittar
 # las = 2 betyder att y-axelns etiketter är horisontella
 par(mfrow = c(3, 1))
 
@@ -207,9 +223,7 @@ plot(stepfun(time3[-1], state3), do.points = FALSE,
      main = "Förslag 3, lambda = 5, mu = 5",
      yaxt = "n")
 axis(2, at = c(0, 1, 2, 3), las = 2)
-
 ```
-
 
 
 
@@ -223,7 +237,8 @@ axis(2, at = c(0, 1, 2, 3), las = 2)
 
 \newpage
 
-# Tid för att systemet hade ändrat tillstånd 500 gånger
+## Tid för att systemet hade ändrat tillstånd 500 gånger
+
 > Räkna ut hur lảng tid det tog innan systemet hade ändrat tillstånd 500 gånger, för alla tre förslag. För att göra detta behöver du kalla funktionen på nytt för de tre förslagen, med ett nytt värde på steps. Jämför tiderna mellan de tre förslagen och reflektera över varför de skiljer sig åt (eller inte).
 
 ```{r}
@@ -257,7 +272,9 @@ Ser att förslag 3 är det snabbast att få systemet att ändra tillstånd 500 g
 
 
 \newpage
-# Andel tid spenderad i varje tillstånd
+
+## Andel tid spenderad i varje tillstånd
+
 > Skriv en funktion proportion_in_state som tar ett tillstånd $s(0,1,2 eller 3$)$ och en simulerad födelse-dödsprocess bdp (som t.ex. variabeln forslag1 ovan) och returnerar andelen tid som processen spenderade i det givna tillstảndet. Alltså, det är fördelningen av tiden (t.ex. i procent) som efterfrågas, inte hur många tidsenheter. Bortse frản det sista elementet i tillstảndsvektorn, eftersom ingen tid spenderats i det sista tillstảndet processen hoppade till.
 
 > Fundera på vad tiderna i tid-vektorn time som fås från `bd_process` är och hur de kan omvandlas till tiderna processen spenderade i varje tillstånd den besökte, och vilka element i tillstảndsvektorn state som ska användas.
@@ -269,13 +286,18 @@ Börjar med att skriva en funktion som beräknar andelen tid som processen spend
 ```{r}
 proportion_in_state <- function(state, bdp) {
 
-  # Beräkna tidsintervallerna mellan tillståndsbyten
+  # Beräkna tidsintervallerna mellan tillståndsbyten genom
+  # att ta differensen mellan tiderna i time-vektorn
   time_intervals <- diff(bdp$time)
 
-  # Ignorera det sista elementet i state-vektorn för att inte räkna med tiden som spenderats i det sista tillståndet eftersom ingen tid spenderas här
+  # Ignorera det sista elementet i state-vektorn enligt instruktionerna
   visited_states <- bdp$state[-length(bdp$state)]
 
-  # Beräkna andelen tid i det givna tillståndet
+  # Beräkna andelen tid i det givna tillståndet genom att 
+  # summera tiden i varje tillstånd då visited_states == state, 
+  # dvs där den besökte tillståndet är det givna tillståndet
+  # och dela med den totala tiden
+
   proportion <- sum(time_intervals[visited_states == state]) / sum(time_intervals)
   return(proportion)
 }
@@ -285,6 +307,7 @@ För att förstå vad tiderna i tid-vektorn time som fås från `bd_process` är
 
 
 Nu kallar vi på funktionen `bd_process` med 1000 steg och räknar ut andelen tid som processen spenderade i varje tillstånd.
+
 ```{r}
 # Generera simulerade data för 1000 tillståndsbyten för varje förslag
 forslag1_1000 <- bd_process(lambda = 1, mu = 5, steps = 1000)
@@ -324,7 +347,8 @@ Ser att förslag 1 och 2 uppfyller institinutionens krav på att vi ska befinna 
 
 \newpage
 
-# Beräkning av stationär fördelning för varje förslag
+## Beräkning av stationär fördelning för varje förslag
+
 > Ange en formel för den stationära fördelningen som funktion av kvoten $\rho=\lambda / \mu$. Bestäm den stationära fördelningen för vart och ett av de tre förslagen. För vilka förslag "borde" systemet fă godkänt?
 
 Vi betraktar en födelse-dödsprocess med ett begränsat tillståndsrum $\{0, 1, 2, 3\}$ där:
